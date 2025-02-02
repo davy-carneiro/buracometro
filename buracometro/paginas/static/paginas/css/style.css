@@ -1,7 +1,12 @@
-body{
+body {
     margin: 0;
     padding: 0;
     line-height: 1.6;
+}
+
+.navbar,
+.navbar-espaco {
+    height: 68px;
 }
 
 .navbar {
@@ -25,6 +30,7 @@ body{
     display: flex;
     gap: 190px;
     transition: all 0.3s ease;
+    margin: 0;
 }
 
 .navbar ul li {
@@ -54,32 +60,58 @@ html {
 }
 
 #inicio {
-    position: relative;
+    /* position: relative; */
+
     background-image: url("../imgs/inicio.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    padding: 100px 50px;
-    min-height: 80vh;
+
+    /* top: 68px; */
+
+    /* padding: 100px 50px; */
+    /* min-height: 80vh; */
+    
     color:whitesmoke;
     z-index: 1;
     overflow: hidden;
 }
 
-#inicio::before {
+#inicio, 
+#inicio > .fundo {
+    min-height: 100vh;
+}
+
+/* #inicio::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.274); /* Preto translúcido */
-    z-index: -1; /* Coloca a camada atrás do conteúdo */
+    background-color: rgba(0, 0, 0, 0.274);
+    z-index: -1; 
+} */
+
+#inicio > .fundo {
+    width: 100%;
+    /* min-height: 100%; */
+    background-color: rgba(0, 0, 0, 0.274);
+}
+
+#inicio .content {
+    /* margin-top: 80px; */
+    padding-top: 80px;
+}
+
+#inicio .content h1 {
+    margin-bottom: 40px;
 }
 
 h1 {
     font-size: 48px;
     font-family: 'Arial', sans-serif;
+    font-weight: bold;
 }
 
 p{

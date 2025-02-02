@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-
+    <div class="navbar-espaco"></div>
     <nav class="navbar">
         <img src="{% static 'imgs/Nosso buraco.png' %}" alt="Logo do site" class="logo">
         <ul>
@@ -23,12 +23,17 @@
             <li><a href="#contatos">Contatos</a></li>
         </ul>
     </nav>
-
     <div class="conteudoNavBar">
         <section id="inicio">
-            <h1>Buracos de São Luís:<br> Registre e Transforme</h1>
-            <p>Aqui, você pode registrar e acompanhar os<br> buracos nas ruas de São Luís, contribuindo<br> para uma cidade melhor!</p>
-            <button class="btn">Comece já!</button>
+            <div class="fundo">
+                <div class="container content">
+                    <h1>Buracos de São Luís:<br> Registre e Transforme</h1>
+                    <p>Aqui, você pode registrar e acompanhar os<br> buracos nas ruas de São Luís, contribuindo<br> para uma cidade melhor!</p>
+                    <form action="/login" method="get">
+                        <button type="submit" class="btn">Comece já!</button>
+                    </form>
+                </div>
+            </div>
         </section>
         <section id="trabalhos">
             <h1>Nossos trabalhos</h1>
@@ -56,20 +61,22 @@
                  para uma cidade mais segura e acessível para todos.
         </section>
         <section id="contatos">
-            <h1>Nossos contatos</h1>
-            <p>Entre em contato conosco através dos seguintes canais:</p>
-            <div class="contato-info">
-                <div class="contato-item">
-                    <img src="{% static 'imgs/email.jpg' %}" alt="icone email">
-                    <p>Email: contato@buracometro.com</p>
-                </div>
-                <div class="contato-item">
-                    <img src="{% static 'imgs/telefone.png' %}" alt="icone telefone">
-                    <p>Telefone: (98) 99999-9999</p>
-                </div>
-                <div class="contato-item">
-                    <img src="{% static 'imgs/mapa.png' %}" alt="icone mapa">
-                    <p>Endereço: Rua Exemplo, 123 - São Luís, MA</p>
+            <div class="container">
+                <h1>Nossos contatos</h1>
+                <p>Entre em contato conosco através dos seguintes canais:</p>
+                <div class="contato-info">
+                    <div class="contato-item">
+                        <img src="{% static 'imgs/email.jpg' %}" alt="icone email">
+                        <p>Email: contato@buracometro.com</p>
+                    </div>
+                    <div class="contato-item">
+                        <img src="{% static 'imgs/telefone.png' %}" alt="icone telefone">
+                        <p>Telefone: (98) 99999-9999</p>
+                    </div>
+                    <div class="contato-item">
+                        <img src="{% static 'imgs/mapa.png' %}" alt="icone mapa">
+                        <p>Endereço: Rua Exemplo, 123 - São Luís, MA</p>
+                    </div>
                 </div>
             </div>
         </section>

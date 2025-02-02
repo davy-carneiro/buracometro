@@ -1,0 +1,13 @@
+main {
+    min-height: 100vh;
+    background-image: url('../imgs/paisagem-montanha.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+#area-login {
+    color: white;
+    border: 1px solid red;
+    width: max-content;
+}
