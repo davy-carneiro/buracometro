@@ -6,3 +6,6 @@ class IndexView(TemplateView):
 
 class LoginView(TemplateView):
     template_name = "paginas/login.html"
+
+class RegisterView(TemplateView):
+    template_name = "paginas/register.html"
