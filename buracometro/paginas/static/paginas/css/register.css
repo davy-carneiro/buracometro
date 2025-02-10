@@ -90,11 +90,11 @@ main > .content {
 }
 
 #area-cadastro {
-    color: white;
+    color: rgb(255, 255, 255);
     font-size: 24px;
-    border: 4px solid #ffffff5e;
+    border: 4px solid #ffffff2a;
     border-radius: 30px;
-    background-color: #ffffff21;
+    background-color: #ffffff4b;
     width: 100%;
     padding: 0 80px 20px 80px;
     min-height: 95vh;
@@ -142,7 +142,7 @@ main > .content {
 
 .input-cloud {
     /* background-color: white; */
-    background-color: #ffffff47;
+    background-color: #ffffff1a;
     padding: 0 10px;
     border: 3px solid #ffffff5e;
     border-radius: 12px;
