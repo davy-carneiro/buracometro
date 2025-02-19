@@ -16,26 +16,36 @@
     <main>
         <div class="content">
             <div id="area-login">
-                <div class="header mb-4">
-                    <span class="title">Login</span>
-                </div>
-                <div class="content">
-                    <div class="mb-4">
-                        <label>Usuário:</label>
-                        <input type="text">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                <form action="{% url 'loginAction' %}" method="post">
+                    {% csrf_token %}
+                    <div class="header mb-4">
+                        <span class="title">Login</span>
                     </div>
-                    <div class="mb-4">
-                        <label>Senha:</label>
-                        <input type="text">
+                    <div class="content">
+                        <div class="mb-4">
+                            <label>Usuário:</label>
+                            <input name="usuario" type="text">
+                        </div>
+                        <div class="mb-4">
+                            <label>Senha:</label>
+                            <input name="senha" type="password">
+                        </div>
+                        <div class="d-flex justify-content-center mb-4">
+                            <button class="btn btn-secondary" type="submit">Entrar</button>
+                        </div>
                     </div>
-                    <div class="d-flex justify-content-center mb-4">
-                        <button class="btn btn-secondary" type="button">Entrar</button>
+                    <div class="observation">
+                        Não possui uma conta?
+                        <a class="destaque" href="/cadastro">Cadastre-se aqui</a>
                     </div>
-                </div>
-                <div class="observation">
-                    Não possui uma conta? 
-                    <a class="destaque" href="/cadastro">Cadastre-se aqui</a>
-                </div>
+                </form>
             </div>
         </div>
     </main>

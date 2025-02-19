@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
-from .models import CustomUser
 from django.contrib import messages
+from django.contrib.auth.hashers import check_password
 from django.db import IntegrityError
-
+from .models import CustomUser
 
 # class IndexView(TemplateView):
 #     template_name = "usuarios/index.html"
@@ -40,3 +40,34 @@ def registerStore(request):
         # return render(request, "sucesso")
 
     return redirect("register") # get
+
+def loginAction (request):
+    if request.method == "POST":
+        usuario = request.POST.get("usuario")
+        senha = request.POST.get("senha")
+
+        try:
+            userExists = CustomUser.objects.filter(username = usuario).exists()
+            passIsValid = False
+            
+            if userExists:
+                user = CustomUser.objects.filter(username = usuario).first()
+                senhaComHash = user.password
+
+                passIsValid = check_password(senha, senhaComHash)
+            
+            if userExists and passIsValid:
+                msg = "Login realizado com sucesso!"
+                messages.success(request, msg)
+                print(msg)
+            else:
+                msg = "Usuário e/ou senha inválido(s)"
+                messages.error(request, msg)
+                print(msg)
+
+        except IntegrityError as e:
+            msg = f"Erro: {e}"
+            messages.error(request, msg)
+            print(msg)
+    
+    return redirect('login')

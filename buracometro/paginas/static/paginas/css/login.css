@@ -11,6 +11,18 @@
     background-color: #7d4826 !important;
 }
 
+.alert {
+    width: 100%;
+    text-align: center;
+}
+
+.alert.alert-error {
+    --bs-alert-color: var(--bs-danger-text-emphasis);
+    --bs-alert-bg: var(--bs-danger-bg-subtle);
+    --bs-alert-border-color: var(--bs-danger-border-subtle);
+    --bs-alert-link-color: var(--bs-danger-text-emphasis);
+}
+
 .destaque {
     font-weight: bold;
     color: orange;
@@ -55,7 +67,9 @@ main > .content {
     width: 100%;
 }
 
-#area-login .content input[type="text"] {
+#area-login .content input[type="text"],
+#area-login .content input[type="password"]
+{
     width: 100%;
     background-color: rgba(255, 255, 255, 0.39);
     border-radius: 24px;
