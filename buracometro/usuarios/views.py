@@ -66,7 +66,7 @@ def loginAction (request):
                 messages.success(request, msg)
                 print(msg)
 
-                return redirect('indexView')
+                return redirect('inicioView')
             else:
                 msg = "Usuário e/ou senha inválido(s)"
                 messages.error(request, msg)
