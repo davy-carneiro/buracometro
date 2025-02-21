@@ -1,0 +1,56 @@
+:root {
+    --espacamanto-conteudo: 50px;
+}
+
+header {
+    background-color: black;   
+    padding: 3px 30px;
+}
+
+header #logo {
+    max-width: 115px;
+}
+
+main {
+    display: flex;
+}
+
+main #barra-lateral {
+    padding-top: var(--espacamanto-conteudo);
+    background-color: blue;
+    /* padding-left: 30px; */
+    /* margin-left: 30px; */
+    border-right: 1px solid black;
+    width: 15%;
+    height: 100vh;
+    color: white;
+}
+
+main #barra-lateral #lista-botoes {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+main #barra-lateral #lista-botoes button {
+    width: 100%;
+    background-color: inherit;
+    border: none;
+    padding: 10px 0;
+    padding-left: 30px;
+    text-align: left;
+    color: inherit;
+}
+
+main #barra-lateral #lista-botoes button:hover {
+    background-color: rgb(31, 31, 164);
+} 
+
+main #barra-lateral #lista-botoes button:active {
+    background-color: rgb(22, 22, 66) !important;
+}
+
+main #conteudo {
+    padding-top: var(--espacamanto-conteudo);
+    width: 85%;
+}

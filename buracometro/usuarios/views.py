@@ -46,6 +46,8 @@ def loginAction (request):
         usuario = request.POST.get("usuario")
         senha = request.POST.get("senha")
 
+        print(senha)
+
         try:
             userExists = CustomUser.objects.filter(username = usuario).exists()
             passIsValid = False
@@ -54,12 +56,17 @@ def loginAction (request):
                 user = CustomUser.objects.filter(username = usuario).first()
                 senhaComHash = user.password
 
-                passIsValid = check_password(senha, senhaComHash)
+                if user.password == senha:
+                    passIsValid = True
+                else:
+                    passIsValid = check_password(senha, senhaComHash)
             
             if userExists and passIsValid:
                 msg = "Login realizado com sucesso!"
                 messages.success(request, msg)
                 print(msg)
+
+                return redirect('indexView')
             else:
                 msg = "Usuário e/ou senha inválido(s)"
                 messages.error(request, msg)
