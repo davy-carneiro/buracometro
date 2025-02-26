@@ -9,3 +9,6 @@ class InicioView(TemplateView):
 
 class RankingView(TemplateView):
     template_name = "principal/ranking.html"
+
+class VerNoMapaView(TemplateView):
+    template_name = "principal/ver-no-mapa.html"
