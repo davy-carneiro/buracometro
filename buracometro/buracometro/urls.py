@@ -6,4 +6,5 @@ urlpatterns = [
     path('', include('paginas.urls')),
     path('', include('usuarios.urls')),
     path('principal', include('principal.urls')),
+    path('buracos', include('buracos.urls')),
 ]

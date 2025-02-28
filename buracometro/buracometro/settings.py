@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'paginas',
     'usuarios',
     'principal',
+    'buracos',
 ]
 
 MIDDLEWARE = [
