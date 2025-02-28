@@ -88,3 +88,7 @@ main > .content {
     position: relative;
     left: -80px;
 }
+
+.container {
+    min-width: 1670px !important;
+}
