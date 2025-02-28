@@ -9,3 +9,10 @@ class CadastroView(TemplateView):
 
 class VerBuracosView(TemplateView):
     template_name = "buracos/ver-buracos.html"
+
+def cadastroStore(request):
+    if request.method == "POST":
+        titulo = request.POST.get("titulo")
+        descricao = request.POST.get("descricao")
+
+    return redirect('cadastrarView')    

@@ -46,7 +46,7 @@ def loginAction (request):
         usuario = request.POST.get("usuario")
         senha = request.POST.get("senha")
 
-        print(senha)
+        # print(senha)
 
         try:
             userExists = CustomUser.objects.filter(username = usuario).exists()
