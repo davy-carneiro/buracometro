@@ -8,3 +8,42 @@
 {% block title %}
 Cadastro de buracos
 {% endblock %}
+
+{% block content %}
+<h1 class="content-title">Cadastro de buracos</h1>
+<form id="formularioCadastroBuracos" action="">
+    <div class="content">
+        <div class="area-itens">
+            <div class="mb-3">
+                <label class="form-label">Título</label>
+                <input class="form-control" type="text" value="">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Descricao</label>
+                <textarea class="form-control"></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Local</label>
+                <select class="form-select">
+                    <option>Selecione</option>
+                </select>
+            </div>
+        </div>
+        <div class="area-imagem">
+            <div class="mb-3">
+                <label class="form-label">Inserir imagem</label>
+                <div class="area-foto">
+                    <i class="icone custom-size fa-solid fa-image"></i>
+                </div>
+            </div>
+            <div>
+                <!-- <button type="button" class="btn btn-def">Procurar</button> -->
+                <input type="file" class="btn btn-def" accept="image/*" value="Procurar">
+            </div>
+        </div>
+    </div>
+    <div>
+        <button class="btn btn-primary btn-large centered">Enviar</button>
+    </div>
+</form>
+{% endblock %}

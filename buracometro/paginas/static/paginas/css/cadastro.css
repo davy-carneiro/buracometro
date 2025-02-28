@@ -1,0 +1,37 @@
+#formularioCadastroBuracos {
+    /* border: 1px solid red; */
+    padding: 20px;
+}
+
+#formularioCadastroBuracos > .content {
+    display: flex;
+}
+
+#formularioCadastroBuracos > .content > .area-itens {
+    width: 70%;
+    padding: 20px;
+}
+
+#formularioCadastroBuracos > .content > .area-imagem {
+    width: 30%;
+    padding: 20px;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#formularioCadastroBuracos > .content > .area-imagem .area-foto {
+    width: 200px;
+    height: 200px;
+    border: 1px solid #cacaca;
+    background-color: #dadada;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#formularioCadastroBuracos > .content > .area-imagem .area-foto > .icone {
+    font-size: 35px;
+}

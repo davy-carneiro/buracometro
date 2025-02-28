@@ -30,14 +30,14 @@
                             </form>
                         </li>
                         <li>
-                            <form action="/">
+                            <form action="{% url 'verBuracosView' %}">
                                 <button>
                                     Ver buracos
                                 </button>
                             </form>
                         </li>
                         <li>
-                            <form action="/">
+                            <form action="{% url 'cadastrarView' %}">
                                 <button>
                                     Adicionar buracos
                                 </button>
@@ -57,10 +57,12 @@
     </header>
     <main>
         <div class="content container">
-            <button id="btnVoltarPrincipal" class="btn-icon">
-                <i class="custom-size fa-solid fa-arrow-left"></i>
-            </button>
-            <h1>teste</h1>
+            <form action="{% url 'inicioView' %}">
+                <button id="btnVoltarPrincipal" class="btn-icon">
+                    <i class="custom-size fa-solid fa-arrow-left"></i>
+                </button>
+            </form>
+            {% block content %}{% endblock %}
         </div>
     </main>
 </body>

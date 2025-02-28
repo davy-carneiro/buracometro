@@ -70,7 +70,8 @@ ul.no-decoration {
 
 main { 
     height: 100vh;
-    background-color: #dadada;
+    /* background-color: #dadada; */
+    background-color: #f5f5f5;
 }
 
 main > .content {
@@ -80,15 +81,51 @@ main > .content {
 }
 
 #btnVoltarPrincipal {
-    background-color: white;
-    border-radius: 50%;
+    background-color: transparent;
     border: none;
-    padding: 5px;
+    border-radius: 50%;
+    padding: 11px 13px;
     font-size: 30px;
     position: relative;
     left: -80px;
+    transition: .2s;
+}
+
+#btnVoltarPrincipal:hover {
+    background-color: #b9b9b9;
 }
 
 .container {
     min-width: 1670px !important;
+}
+
+.content-title {
+    position: relative;
+    top: -50px;
+}
+
+.centered {
+    margin: 0 auto;
+    display: block;
+    width: max-content;
+}
+
+
+.btn.btn-def {
+    background-color: #f0f0f0;
+}
+
+.btn.btn-def:hover {
+    background-color: #e3e3e3;
+}
+
+.btn.btn-def:active {
+    border: 1px solid #d1d1d1;
+    outline: unset;
+    background-color: #d1d1d1 !important;
+}
+
+.btn.btn-large {
+    padding: 10px 80px;
+    font-size: 18px;
 }
