@@ -1,6 +1,7 @@
 #formularioCadastroBuracos {
     /* border: 1px solid red; */
     padding: 20px;
+    padding-bottom: 100px;
 }
 
 #formularioCadastroBuracos > .content {
@@ -34,4 +35,57 @@
 
 #formularioCadastroBuracos > .content > .area-imagem .area-foto > .icone {
     font-size: 35px;
+}
+
+@media (max-width: 1670px) {
+    .container {
+        max-width: 1670px;
+        padding: 0 85px;
+    }
+
+    #iptEscolherArquivo {
+        scale: .9;
+    }
+}
+
+@media (max-width: 1250px) {
+    #formularioCadastroBuracos > .content > .area-itens {
+        width: 60%;
+    }
+    
+    #formularioCadastroBuracos > .content > .area-imagem {
+        width: 40%;
+    }
+}
+
+@media (max-width: 1130px) {
+    #formularioCadastroBuracos > .content {
+        flex-direction: column-reverse;
+    }
+
+    #formularioCadastroBuracos > .content > .area-itens,
+    #formularioCadastroBuracos > .content > .area-imagem    
+    {
+        width: 100%;
+    }
+
+    #formularioCadastroBuracos > .content > .area-imagem .area-foto {
+        width: 280px;
+        height: 280px;
+    }
+}
+
+@media (max-width: 900px) {
+    .container {
+        padding: 0 20px;
+    }
+
+    .content-title {
+        padding-left: 50px;
+    }
+
+    #btnVoltarPrincipal {
+        top: -4px;
+        left: -15px;
+    }
 }

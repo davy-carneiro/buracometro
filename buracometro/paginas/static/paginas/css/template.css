@@ -95,9 +95,11 @@ main > .content {
     background-color: #b9b9b9;
 }
 
-.container {
-    max-width: 1670px;
-    /* min-width: 1670px !important; */
+@media (max-width: 1670px) {
+    .container {
+        max-width: 1670px;
+        padding: 0 85px;
+    }
 }
 
 .content-title {
