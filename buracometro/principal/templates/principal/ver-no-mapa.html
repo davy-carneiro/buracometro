@@ -18,11 +18,8 @@ Ver no mapa
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-// Criar o mapa e definir o centro e o zoom inicial
-// var map = L.map('map').setView([51.505, -0.09], 13); // Latitude e Longitude iniciais (exemplo)
-var map = L.map('map').setView([-2.5184, -44.2054], 16);
+    var map = L.map('map').setView([-2.5184, -44.2054], 16);
     
-
     // Adicionar a camada de tiles do OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -32,6 +29,14 @@ var map = L.map('map').setView([-2.5184, -44.2054], 16);
     map.on('click', function(e) {
         var lat = e.latlng.lat; // Latitude
         var lng = e.latlng.lng; // Longitude
+
+            if (marker) {
+                map.removeLayer(marker);
+            }
+
+            // Adiciona um novo marcador na posição clicada
+            marker = L.marker(e.latlng).addTo(map);
+        });
 
         // Atualiza o texto com as coordenadas
         document.getElementById('coords').innerText = 'Latitude: ' + lat + ', Longitude: ' + lng;
@@ -59,30 +64,33 @@ var map = L.map('map').setView([-2.5184, -44.2054], 16);
         .bindPopup("Este é o local com a imagem!")
         .openPopup();
 
-    var bounds = [
-        [-2.4025, -43.8717], // Coordenada sudoeste
-        [-2.8044, -44.5679]  // Coordenada nordeste
-    ];
+    // var bounds = [
+    //     [-2.4025, -43.8717], // Coordenada sudoeste
+    //     [-2.8044, -44.5679]  // Coordenada nordeste
+    // ];
 
-    map.setMaxBounds(bounds);
+    // // Definir os limites do mapa (exemplo: uma região ao redor de São Paulo)
+    // var bounds = L.latLngBounds(
+    //     L.latLng(-23.8, -46.9), // Sudoeste
+    //     L.latLng(-23.3, -46.3)  // Nordeste
+    // );
+
+    // var bounds = L.latLngBounds(
+    //     L.latLng(-2.4025, -43.8717),
+    //     L.latLng(-2.8044, -44.5679)
+    // );
+
+    // Aplicar os limites ao mapa
+    // map.setMaxBounds(bounds);
+
+    // Opcional: Evitar que o usuário saia da área ao dar zoom out
+    // map.options.minZoom = 10;
+
+    // map.setMaxBounds(bounds);
 
     // // Configuração de zoom para garantir que o zoom não ultrapasse o nível desejado
     map.on('drag', function() {
         map.panInsideBounds(bounds);
     });
-
-    // Definir os limites de São Paulo (em coordenadas)
-    // var bounds = [
-    //     [-24.0074, -48.6570], // Coordenada sudoeste
-    //     [-23.0862, -44.1392]  // Coordenada nordeste
-    // ];
-
-    // // Definir os limites máximos do mapa para não sair dessa área
-    // map.setMaxBounds(bounds);
-
-    // // Configuração de zoom para garantir que o zoom não ultrapasse o nível desejado
-    // map.on('drag', function() {
-    //     map.panInsideBounds(bounds);
-    // });
 </script>
 {% endblock %}

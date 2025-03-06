@@ -11,7 +11,7 @@ Cadastro de buracos
 
 {% block content %}
 <h1 class="content-title">Cadastro de buracos</h1>
-<form id="formularioCadastroBuracos" action="{% url 'cadastroStore' %}" method="post">
+<form id="formularioCadastroBuracos" action="{% url 'cadastroStore' %}" enctype="multipart/form-data" method="post">
     {% csrf_token %} 
     <div class="content">
         <div class="area-itens">
@@ -25,16 +25,22 @@ Cadastro de buracos
             </div>
             <div class="mb-3">
                 <label class="form-label">Local</label>
-                <select class="form-select">
-                    <option>Selecione</option>
-                </select>
+                <a class="btn btn-def" href="{% url 'cadastroSelecionarLocalView' %}">Selecionar local</a>
+                <input type="hidden" name="coordenadas">
+                <label for="">Coordenadas: {{coordenadas}}</label>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Tamanho do buraco</label>
+                <input type="range" name="tamanho" value="1" class="form-range" min="1" max="4" step="1" id="customRange3">
             </div>
         </div>
         <div class="area-imagem">
             <div class="mb-3">
                 <label class="form-label">Inserir imagem</label>
-                <div class="area-foto">
-                    <i class="icone custom-size fa-solid fa-image"></i>
+                <div id="area-foto" class="area-foto">
+                    <div class="content">
+                        <i class="icone custom-size fa-solid fa-image"></i>
+                    </div>
                 </div>
             </div>
             <div>
@@ -43,6 +49,7 @@ Cadastro de buracos
                     id="iptEscolherArquivo" 
                     type="file" 
                     class="btn btn-def" 
+                    name="imagem"
                     accept="image/*" 
                     value="Procurar">
             </div>
@@ -52,4 +59,20 @@ Cadastro de buracos
         <button class="btn btn-primary btn-large centered">Enviar</button>
     </div>
 </form>
+<img src="C:/xampp/htdocs/buracometro/buracometro/image/pagina7_20250306175237.jpg" alt="teste">
+<div id="fundoEscuro" class="oculto"></div>
+<div id="areaMapaOculto" class="oculto">
+    <button id="btnCancelarFundoEscuro" class="btn-icon circle">
+        <i class="custom-size fa-solid fa-xmark"></i>
+    </button>
+    <div id="mapa"></div>
+    <button id="btnAvancarLocal" class="btn btn-large btn-success centered mt-5" type="button">
+        Confirmar
+    </button>
+</div>
+<div class="default-map"></div>
+{% endblock %}
+
+{% block js %}
+<script type="module" src="{% static '/js/cadastro-buracos.js'%}"></script>
 {% endblock %}
