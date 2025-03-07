@@ -63,6 +63,9 @@ def loginAction (request):
                 else:
                     passIsValid = check_password(senha, senhaComHash)
             
+            print(userExists)
+            print(passIsValid)
+
             if userExists and passIsValid:
                 user = authenticate(request, username = usuario, password = senha)
                 
@@ -83,5 +86,7 @@ def loginAction (request):
             msg = f"Erro: {e}"
             messages.error(request, msg)
             print(msg)
+
+        print(msg)
     
     return redirect('login')

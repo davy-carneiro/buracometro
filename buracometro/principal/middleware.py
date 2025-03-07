@@ -15,7 +15,11 @@ class LoginRequiredMiddleware:
         if not request.user.is_authenticated \
             and request.path \
             not in urls_liberadas \
-            and not request.path.startswith(('/admin')):
+            and not request.path.startswith((
+                '/admin',
+                '/login',
+                '/cadastrar'
+            )):
             return redirect(reverse('login'))
         
         response = self.get_response(request)
