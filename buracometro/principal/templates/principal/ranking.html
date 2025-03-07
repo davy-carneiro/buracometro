@@ -6,7 +6,10 @@ Ranking
 {% endblock %}
 
 {% block content %}
-<span>1- Buraco</span>
-<span>2- Buraco medio</span>
-<span>3- Buraco pequeno</span>
+
+{% for buraco in buracos %}
+       {{buraco.titulo}}
+       {{buraco.descricao}}
+{% endfor %}
+
 {% endblock %}
