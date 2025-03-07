@@ -52,8 +52,15 @@ def cadastroSelecionarLocalView(request):
 
     return render(request, "buracos/cadastro-selecionar-local.html", variaveis)
 
-class VerBuracosView(TemplateView):
-    template_name = "buracos/ver-buracos.html"
+# class VerBuracosView(TemplateView):
+#     template_name = "buracos/ver-buracos.html"
+
+def verBuracosView(request):
+    buracos = Buraco.objects.all()
+    variaveis = {
+        'rows': buracos,
+    }
+    return render(request, 'buracos/ver-buracos.html', variaveis)
 
 def passarLocalParaCadastroView(request):
     if request.method == "POST":

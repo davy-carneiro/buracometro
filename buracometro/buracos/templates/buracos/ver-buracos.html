@@ -1,20 +1,37 @@
 {% extends 'buracos/template.html' %}
 {% load static %}
 
-
 {% block content %}
-<div id="map" style="width: 100%; height: 400px;"></div>
+<div>
+    <input type="text">
+    <button>Pesquisar</button>
+</div>
+<div class="row">
+    {% for row in rows %}
+        <div class="card" style="width: 18rem;">
+            <img src="{% static '/image-users/' %}{{row.url_imagem}}" class="card-img-top" alt="...">
+            <div class="card-body">
+                <h5 class="card-title">{{row.titulo}}</h5>
+                <p class="card-text">{{row.descricao}}</p>
+                <span>Data: {{row.data_atual}}</span>
+                <span>Tamanho: </span>
+                {% if row.tamanho == 1 %}
+                    Pequeno
+                {% elif row.tamanho == 2 %}
+                    Médio
+                {% elif row.tamanho == 3 %}
+                    Grande
+                {% elif row.tamanho == 4 %}
+                    Grotesco
+                {% endif %}
+                <a href="#" class="btn btn-primary">Go somewhere</a>
+            </div>
+        </div>
+    {% empty %}
+        Nenhum produto disponível
+    {% endfor %}
+</div>
 {% endblock%}
 
 {% block js %}
-<!-- <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script> -->
-<script>
-    var map = L.map('map').setView([-2.5184, -44.2054], 16);
-
-    // Adicionar a camada de tiles do OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-</script>
 {% endblock %}
