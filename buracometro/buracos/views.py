@@ -14,30 +14,62 @@ from datetime import datetime
 #     template_name = "buracos/cadastro.html"
 
 def cadastroView(request):
+    titulo = request.GET.get('titulo', '')
+    descricao = request.GET.get('descricao', '')
+    tamanho = request.GET.get('tamanho', '1')
     coordenadas = request.GET.get('coordenadas', '') 
-    return render(request, 'buracos/cadastro.html', {'coordenadas': coordenadas})
+    endereco = request.GET.get('endereco', '')
 
-class CadastroSelecionarLocalView(TemplateView):
-    template_name = "buracos/cadastro-selecionar-local.html"
+    variaveis = {
+        'titulo': titulo,
+        'descricao': descricao,
+        'tamanho': tamanho,
+        'coordenadas': coordenadas,
+        'endereco': endereco,
+    }
+
+    return render(request, 'buracos/cadastro.html', variaveis)
+
+# class CadastroSelecionarLocalView(TemplateView):
+#     template_name = "buracos/cadastro-selecionar-local.html"
+
+def cadastroSelecionarLocalView(request):
+    titulo = ''
+    descricao = ''
+    tamanho = '1'
+
+    if request.method == "POST":
+        titulo = request.POST.get("titulo")
+        descricao = request.POST.get("descricao")
+        tamanho = request.POST.get("tamanho")
+
+    variaveis = {
+        'titulo': titulo,
+        'descricao': descricao,
+        'tamanho': tamanho,
+    }
+
+    return render(request, "buracos/cadastro-selecionar-local.html", variaveis)
 
 class VerBuracosView(TemplateView):
     template_name = "buracos/ver-buracos.html"
 
 def passarLocalParaCadastroView(request):
     if request.method == "POST":
+        titulo = request.POST.get("titulo")
+        descricao = request.POST.get("descricao")
+        tamanho = request.POST.get("tamanho")
         coordenadas = request.POST.get("coordenadas")
-        print(coordenadas)
-        print('')
-        print('')
-        print('')
-        print('')
-        print('')
-        print('')
-        print('')
-        print('')
-        print('')
-        # print(reverse('cadastroView'))
-        parametros = {'coordenadas': coordenadas}  # Dicionário de parâmetros GET
+        endereco = request.POST.get("endereco")
+
+        parametros = {
+            'titulo': titulo,
+            'descricao': descricao,
+            'tamanho': tamanho,
+            'coordenadas': coordenadas,
+            'endereco': endereco,
+        }
+
         url = reverse('cadastrarView') + '?' + urlencode(parametros)  # Adiciona os parâmetros à URL
 
     return redirect(url)
@@ -47,8 +79,9 @@ def cadastroStore(request):
         titulo = request.POST.get("titulo")
         descricao = request.POST.get("descricao")
         coordenadas = request.POST.get("coordenadas")
+        endereco = request.POST.get("endereco")
         tamanho = request.POST.get("tamanho")
-        imagem = request.FILES["imagem"]  # Obtém o arquivo enviado
+        imagem = request.FILES["imagem"]
 
         caminho_pasta = os.path.join(settings.BASE_DIR, 'image')  # Pasta de destino
         nome_arquivo = imagem.name
@@ -63,13 +96,15 @@ def cadastroStore(request):
             nome_arquivo = f"{base_nome}_{timestamp}{extensao}"
             caminho_arquivo = os.path.join(caminho_pasta, nome_arquivo)
 
-        with open(caminho_arquivo, 'wb+') as destino:
-            shutil.copyfileobj(imagem.file, destino)
+        # with open(caminho_arquivo, 'wb+') as destino:
+        #     shutil.copyfileobj(imagem.file, destino)
 
         print(titulo)
         print(descricao)
+        print(endereco)
         print(coordenadas)
         print(tamanho)
+        print(imagem)
         print(caminho_arquivo.replace('\\', '/'))
 
     return redirect('cadastrarView')    

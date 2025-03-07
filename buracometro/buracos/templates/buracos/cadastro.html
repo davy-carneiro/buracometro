@@ -11,27 +11,54 @@ Cadastro de buracos
 
 {% block content %}
 <h1 class="content-title">Cadastro de buracos</h1>
-<form id="formularioCadastroBuracos" action="{% url 'cadastroStore' %}" enctype="multipart/form-data" method="post">
+<form 
+    id="formularioCadastroBuracos" 
+    action="{% url 'cadastroStore' %}" 
+    enctype="multipart/form-data" 
+    method="post">
     {% csrf_token %} 
     <div class="content">
         <div class="area-itens">
             <div class="mb-3">
                 <label class="form-label">Título</label>
-                <input class="form-control" name="titulo" type="text" value="">
+                <input 
+                    id="iptTitulo" 
+                    class="form-control" 
+                    name="titulo" 
+                    type="text" 
+                    value="{{titulo}}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Descricao</label>
-                <textarea class="form-control" name="descricao"></textarea>
+                <textarea 
+                    id="iptDescricao" 
+                    class="form-control" 
+                    name="descricao">{{descricao}}</textarea>
             </div>
             <div class="mb-3">
                 <label class="form-label">Local</label>
-                <a class="btn btn-def" href="{% url 'cadastroSelecionarLocalView' %}">Selecionar local</a>
+                <button 
+                    id="btnSelecionarLocal"
+                    type="button" 
+                    class="btn btn-def">
+                    <!-- href="{% url 'cadastroSelecionarLocalView' %}"> -->
+                    Selecionar local
+                </button>
                 <input type="hidden" name="coordenadas">
-                <label for="">Coordenadas: {{coordenadas}}</label>
+                <label for="">{{endereco}}</label>
             </div>
             <div class="mb-3">
                 <label class="form-label">Tamanho do buraco</label>
-                <input type="range" name="tamanho" value="1" class="form-range" min="1" max="4" step="1" id="customRange3">
+                <input
+                    id="iptTamanho" 
+                    type="range" 
+                    name="tamanho" 
+                    value="{{tamanho}}" 
+                    class="form-range" 
+                    min="1" 
+                    max="4" 
+                    step="1" 
+                    id="customRange3">
             </div>
         </div>
         <div class="area-imagem">
@@ -44,7 +71,6 @@ Cadastro de buracos
                 </div>
             </div>
             <div>
-                <!-- <button type="button" class="btn btn-def">Procurar</button> -->
                 <input 
                     id="iptEscolherArquivo" 
                     type="file" 
@@ -59,18 +85,13 @@ Cadastro de buracos
         <button class="btn btn-primary btn-large centered">Enviar</button>
     </div>
 </form>
-<img src="C:/xampp/htdocs/buracometro/buracometro/image/pagina7_20250306175237.jpg" alt="teste">
-<div id="fundoEscuro" class="oculto"></div>
-<div id="areaMapaOculto" class="oculto">
-    <button id="btnCancelarFundoEscuro" class="btn-icon circle">
-        <i class="custom-size fa-solid fa-xmark"></i>
-    </button>
-    <div id="mapa"></div>
-    <button id="btnAvancarLocal" class="btn btn-large btn-success centered mt-5" type="button">
-        Confirmar
-    </button>
-</div>
-<div class="default-map"></div>
+<form id="formPassandoDados" action="{% url 'cadastroSelecionarLocalView' %}" method="post">
+    {% csrf_token %}
+    <input id="iptHiddenTitulo"    name="titulo"    type="hidden">
+    <input id="iptHiddenDescricao" name="descricao" type="hidden">
+    <input id="iptHiddenTamanho"   name="tamanho"   type="hidden">
+</form>
+<!-- <img src="C:/xampp/htdocs/buracometro/buracometro/image/pagina7_20250306175237.jpg" alt="teste"> -->
 {% endblock %}
 
 {% block js %}

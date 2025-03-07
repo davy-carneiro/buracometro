@@ -1,12 +1,13 @@
 from django.db import models
 
 class Buraco(models.Model):
-    titulo = models.CharField(max_length=255)  # Nome do objeto
-    descricao = models.TextField()  # Descrição do objeto
-    local = models.CharField(max_length=255)  # Local onde o objeto se encontra
-    data_atual = models.DateTimeField(auto_now_add=True)  # Data e hora atuais (preenchido automaticamente)
-    url_imagem = models.URLField()  # URL da imagem
+    titulo = models.CharField(max_length=255) 
+    descricao = models.TextField()  
+    local = models.CharField(max_length=255)  
+    endereco = models.CharField(max_length=255)
+    url_imagem = models.URLField()
     tamanho = models.SmallIntegerField(default=0)
+    data_atual = models.DateTimeField(auto_now_add=True)
     created_at = models.DateTimeField(auto_now_add=True)  # Data e hora de criação (preenchido automaticamente)
     updated_at = models.DateTimeField(auto_now=True)  # Data e hora de última atualização (atualizado automaticamente)
 
