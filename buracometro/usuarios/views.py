@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 from django.contrib import messages
+from django.contrib.auth import authenticate, login             
 from django.contrib.auth.hashers import check_password
 from django.db import IntegrityError
+from django.urls import reverse
 from .models import CustomUser
 
 # class IndexView(TemplateView):
@@ -62,6 +64,11 @@ def loginAction (request):
                     passIsValid = check_password(senha, senhaComHash)
             
             if userExists and passIsValid:
+                user = authenticate(request, username = usuario, password = senha)
+                
+                if user is not None:
+                    login(request, user)  
+
                 msg = "Login realizado com sucesso!"
                 messages.success(request, msg)
                 print(msg)

@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
 from django.contrib import messages
+from django.urls import reverse
+from django.contrib.auth import logout
 from django.contrib.auth.hashers import check_password
 from django.db import IntegrityError
 from buracos.models import Buraco
@@ -21,3 +23,8 @@ def rankingView(request):
 
 class VerNoMapaView(TemplateView):
     template_name = "principal/ver-no-mapa.html"
+
+# def deslogar(request):
+def deslogar(request):
+    logout(request) 
+    return redirect(reverse('inicio'))

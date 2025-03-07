@@ -52,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'principal.middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'buracometro.urls'
