@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let titulo = card.querySelector('.card-title').innerHTML.trim();
             titulo = titulo.toLowerCase();
 
-            if (texto == titulo) {
+            if (titulo.includes(texto) || texto == '') {
                 if (card.classList.contains('oculto')) 
                     card.classList.remove('oculto');
             }

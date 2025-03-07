@@ -30,13 +30,12 @@ Ver no mapa
         var lat = e.latlng.lat; // Latitude
         var lng = e.latlng.lng; // Longitude
 
-            if (marker) {
-                map.removeLayer(marker);
-            }
+        // if (marker) {
+        //     map.removeLayer(marker);
+        // }
 
-            // Adiciona um novo marcador na posição clicada
-            marker = L.marker(e.latlng).addTo(map);
-        });
+        // // Adiciona um novo marcador na posição clicada
+        // marker = L.marker(e.latlng).addTo(map);
 
         // Atualiza o texto com as coordenadas
         document.getElementById('coords').innerText = 'Latitude: ' + lat + ', Longitude: ' + lng;
@@ -51,13 +50,13 @@ Ver no mapa
     var coordenadas = [-2.5184, -44.2054]; // Exemplo de coordenadas (Latitude, Longitude)
 
     // Definir a imagem a ser usada como ícone
-    var imagemIcone = L.icon({
-        // iconUrl: 'https://example.com/sua-imagem.png',  // URL da imagem
-        iconUrl: "{% static 'imgs/boneco.png' %}",
-        iconSize: [50, 50],  // Tamanho da imagem (ajuste conforme necessário)
-        iconAnchor: [25, 50], // Posição do ponto de ancoragem (ajuste conforme necessário)
-        popupAnchor: [0, -50] // Posição do popup (ajuste conforme necessário)
-    });
+    // var imagemIcone = L.icon({
+    //     // iconUrl: 'https://example.com/sua-imagem.png',  // URL da imagem
+    //     iconUrl: "{% static 'imgs/boneco.png' %}",
+    //     iconSize: [50, 50],  // Tamanho da imagem (ajuste conforme necessário)
+    //     iconAnchor: [25, 50], // Posição do ponto de ancoragem (ajuste conforme necessário)
+    //     popupAnchor: [0, -50] // Posição do popup (ajuste conforme necessário)
+    // });
 
     // Adicionar o marcador com a imagem como ícone na coordenada
     L.marker(coordenadas, { icon: imagemIcone }).addTo(map)
