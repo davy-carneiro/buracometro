@@ -136,6 +136,7 @@
 
         document.getElementById('spanEndereco').innerHTML = '';
         document.getElementById('statusCarregando').classList.remove('oculto');
+        document.getElementById('btnConfirmar').disabled   = true;
 
         fetch(url)
             .then(response => response.json())

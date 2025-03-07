@@ -17,6 +17,15 @@ Cadastro de buracos
     enctype="multipart/form-data" 
     method="post">
     {% csrf_token %} 
+    <div class="top">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message|safe }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
     <div class="content">
         <div class="area-itens">
             <div class="mb-3">
@@ -44,8 +53,17 @@ Cadastro de buracos
                     <!-- href="{% url 'cadastroSelecionarLocalView' %}"> -->
                     Selecionar local
                 </button>
-                <input type="hidden" name="coordenadas">
-                <label for="">{{endereco}}</label>
+                <span>{{endereco}}</span>
+                <input 
+                    id="iptCoordenadas" 
+                    type="hidden" 
+                    name="coordenadas" 
+                    value="{{coordenadas}}">
+                <input 
+                    id="iptEndereco" 
+                    type="hidden" 
+                    name="endereco"    
+                    value="{{endereco}}">
             </div>
             <div class="mb-3">
                 <label class="form-label">Tamanho do buraco</label>
@@ -82,7 +100,11 @@ Cadastro de buracos
         </div>
     </div>
     <div>
-        <button class="btn btn-primary btn-large centered">Enviar</button>
+        <button 
+            id="btnEnviar" 
+            class="btn btn-primary btn-large centered" 
+            type="button"
+            >Enviar</button>
     </div>
 </form>
 <form id="formPassandoDados" action="{% url 'cadastroSelecionarLocalView' %}" method="post">

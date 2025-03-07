@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.db import IntegrityError
 from datetime import datetime
+from .models import Buraco
 
 # class CadastroView(TemplateView):
 #     template_name = "buracos/cadastro.html"
@@ -83,7 +84,7 @@ def cadastroStore(request):
         tamanho = request.POST.get("tamanho")
         imagem = request.FILES["imagem"]
 
-        caminho_pasta = os.path.join(settings.BASE_DIR, 'image')  # Pasta de destino
+        caminho_pasta = os.path.join(settings.BASE_DIR, 'paginas/static/paginas/image-users')  # Pasta de destino
         nome_arquivo = imagem.name
 
         os.makedirs(caminho_pasta, exist_ok=True)
@@ -96,15 +97,34 @@ def cadastroStore(request):
             nome_arquivo = f"{base_nome}_{timestamp}{extensao}"
             caminho_arquivo = os.path.join(caminho_pasta, nome_arquivo)
 
-        # with open(caminho_arquivo, 'wb+') as destino:
-        #     shutil.copyfileobj(imagem.file, destino)
+        try:
+            buraco = Buraco.objects.create (
+                titulo = titulo,
+                descricao = descricao,
+                local = coordenadas,
+                endereco = endereco,
+                tamanho = tamanho,
+                url_imagem = nome_arquivo,
+            )
 
-        print(titulo)
-        print(descricao)
-        print(endereco)
-        print(coordenadas)
-        print(tamanho)
-        print(imagem)
-        print(caminho_arquivo.replace('\\', '/'))
+            buraco.save()
+
+            with open(caminho_arquivo, 'wb+') as destino:
+                shutil.copyfileobj(imagem.file, destino)
+
+            msg = "Buraco cadastrado com sucesso! " \
+                f"Veja mais em <a href='{reverse('verBuracosView')}'>seus buracos</a>"
+            messages.success(request, msg)
+        except IntegrityError as e:
+            msg = f"Erro ao criar buraco: {e}"
+            messages.error(request, msg)
+
+        # print(titulo)
+        # print(descricao)
+        # print(endereco)
+        # print(coordenadas)
+        # print(tamanho)
+        # print(imagem)
+        # print(nome_arquivo)
 
     return redirect('cadastrarView')    

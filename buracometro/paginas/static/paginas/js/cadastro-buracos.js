@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let btnCancelarFundoEscuro = document.getElementById('btnCancelarFundoEscuro');
     let fundoEscuro = document.getElementById('fundoEscuro');
     let btnAvancarLocal = document.getElementById('btnAvancarLocal');
+
+    let btnEnviar = document.getElementById('btnEnviar');
     // let areaMapaOculto = document.getElementById('areaMapaOculto');
     // let mapa = document.getElementById('mapa');
     // var map = L.map('mapa').setView([-2.5184, -44.2054], 16);
@@ -50,6 +52,15 @@ document.addEventListener('DOMContentLoaded', function () {
         mostrarImagem(this, areaFoto);
     });
 
+    btnEnviar
+    .addEventListener('click', function () {
+        let form = document.getElementById('formularioCadastroBuracos');
+
+        if (validarCampos()) {
+            form.submit();
+        }
+    })
+
     // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     // }).addTo(map);
@@ -81,5 +92,43 @@ document.addEventListener('DOMContentLoaded', function () {
 
             reader.readAsDataURL(input.files[0]);
         }
+    }
+
+    function validarCampos () {
+        let iptTitulo = document.getElementById('iptTitulo');
+        let iptCoordenadas = document.getElementById('iptCoordenadas');
+        let iptEndereco = document.getElementById('iptEndereco');
+        let iptTamanho  = document.getElementById('iptTamanho');
+        let iptImagem   = document.getElementById('iptEscolherArquivo');
+
+        let retorno = false;
+        let msg = '';
+
+        let titulo      = iptTitulo.value;
+        let coordenadas = iptCoordenadas.value;
+        let endereco    = iptEndereco.value;
+        let tamanho     = iptTamanho.value;
+        let imagem      = iptImagem.value;
+
+        if (titulo.trim() == '') {
+            msg = 'O título não pode estar vazio!';
+        }
+        else if (coordenadas.trim() == '' || endereco.trim() == '') {
+            msg = 'Selecione um local antes de prosseguir!';
+        }
+        else if (!(parseInt(tamanho) >= 1 && parseInt(tamanho) <= 4)) {
+            msg = 'Tamanho inválido';
+        }
+        else if (imagem == '') {
+            msg = 'Selecione uma imagem antes';
+        }
+        else {
+            retorno = true;
+        }
+
+        if (retorno == false) 
+            alert(msg);
+
+        return retorno;
     }
 });
