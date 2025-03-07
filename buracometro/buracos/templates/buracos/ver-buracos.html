@@ -1,29 +1,38 @@
 {% extends 'buracos/template.html' %}
 {% load static %}
 
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/ver-buracos.css' %}">
+{% endblock%}
+
 {% block content %}
 <div>
-    <input type="text">
-    <button>Pesquisar</button>
+    <input id="iptPesquisar" type="text">
+    <button id="btnPesquisar">Pesquisar</button>
 </div>
-<div class="row">
+<div class="row buracos">
     {% for row in rows %}
         <div class="card" style="width: 18rem;">
             <img src="{% static '/image-users/' %}{{row.url_imagem}}" class="card-img-top" alt="...">
             <div class="card-body">
                 <h5 class="card-title">{{row.titulo}}</h5>
                 <p class="card-text">{{row.descricao}}</p>
-                <span>Data: {{row.data_atual}}</span>
-                <span>Tamanho: </span>
-                {% if row.tamanho == 1 %}
-                    Pequeno
-                {% elif row.tamanho == 2 %}
-                    Médio
-                {% elif row.tamanho == 3 %}
-                    Grande
-                {% elif row.tamanho == 4 %}
-                    Grotesco
-                {% endif %}
+                <div>
+                    <span>Tamanho: </span>
+                    {% if row.tamanho == 1 %}
+                        Pequeno
+                    {% elif row.tamanho == 2 %}
+                        Médio
+                    {% elif row.tamanho == 3 %}
+                        Grande
+                    {% elif row.tamanho == 4 %}
+                        Gigante
+                    {% endif %}
+                </div>
+                <div>
+                    <span>Publicado em: </span>
+                    <span>{{row.data_atual}}</span>
+                </div>
                 <a href="#" class="btn btn-primary">Go somewhere</a>
             </div>
         </div>
@@ -34,4 +43,5 @@
 {% endblock%}
 
 {% block js %}
+<script type="module" src="{% static 'js/ver-buracos.js' %}"></script>
 {% endblock %}
