@@ -1,0 +1,563 @@
+{% extends 'principal/principal.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="feed-container">
+    <div class="post-card detalhe-post-card">
+        <div class="post-header">
+            <div class="avatar">
+                {% if buraco.usuario.foto %}
+                    <img src="{{ buraco.usuario.foto.url }}" alt="Foto de perfil">
+                {% elif buraco.usuario %}
+                    {{ buraco.usuario.username|slice:":1"|upper }}
+                {% else %}
+                    ?
+                {% endif %}
+            </div>
+
+            <div>
+                {% if buraco.usuario %}
+                    <h2>
+                        <a href="{% url 'perfilPublicoView' buraco.usuario.username %}">
+                            {{ buraco.usuario.name|default:buraco.usuario.username }}
+                            {% if buraco.usuario.is_staff or buraco.usuario.is_superuser %}
+                                <span class="selo-admin"><i class='bx bxs-badge-check'></i> admin</span>
+                            {% elif buraco.usuario.verificado %}
+                                <span class="selo-verificado" title="Colaborador verificado"><i class='bx bxs-check-circle'></i></span>
+                            {% endif %}
+                        </a>
+                    </h2>
+                    <p>@{{ buraco.usuario.username }} • {{ buraco.endereco }}</p>
+                    <span class="status-buraco status-{{ buraco.status_classe }}">{{ buraco.status_nome }}</span>
+                    {% if request.user.is_staff or request.user.is_superuser %}
+                        <form class="form-status-buraco" data-url="{% url 'atualizarStatusBuraco' buraco.id %}">
+                            {% csrf_token %}
+                            <select name="status" aria-label="Alterar status da postagem">
+                                <option value="nao_arrumado" {% if buraco.status == "nao_arrumado" %}selected{% endif %}>Ainda nao foi arrumado</option>
+                                <option value="em_obra" {% if buraco.status == "em_obra" %}selected{% endif %}>Em obra</option>
+                                <option value="arrumado" {% if buraco.status == "arrumado" %}selected{% endif %}>Ja arrumado</option>
+                            </select>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <h2>Usuário desconhecido</h2>
+                    <p>{{ buraco.endereco }}</p>
+                    <span class="status-buraco status-{{ buraco.status_classe }}">{{ buraco.status_nome }}</span>
+                    {% if request.user.is_staff or request.user.is_superuser %}
+                        <form class="form-status-buraco" data-url="{% url 'atualizarStatusBuraco' buraco.id %}">
+                            {% csrf_token %}
+                            <select name="status" aria-label="Alterar status da postagem">
+                                <option value="nao_arrumado" {% if buraco.status == "nao_arrumado" %}selected{% endif %}>Ainda nao foi arrumado</option>
+                                <option value="em_obra" {% if buraco.status == "em_obra" %}selected{% endif %}>Em obra</option>
+                                <option value="arrumado" {% if buraco.status == "arrumado" %}selected{% endif %}>Ja arrumado</option>
+                            </select>
+                        </form>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            {% if buraco.usuario and request.user.id == buraco.usuario.id %}
+                <div class="post-menu">
+                    <button type="button" class="btn-post-menu" aria-label="Opcoes da postagem">
+                        <i class='bx bx-dots-horizontal-rounded'></i>
+                    </button>
+                    <form class="post-menu-opcoes form-excluir-post oculto" action="{% url 'excluirBuraco' buraco.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit">Excluir post</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+
+        {% if buraco.imagem %}
+            <img class="post-image" src="{{ buraco.imagem.url }}" alt="Imagem do buraco">
+        {% elif buraco.url_imagem %}
+            <img class="post-image" src="{% static 'image-users/' %}{{ buraco.url_imagem }}" alt="Imagem do buraco">
+        {% endif %}
+
+        <div class="post-body">
+            <p>{{ buraco.descricao }}</p>
+
+            <div class="post-info">
+                <span>Tamanho: {{ buraco.tamanho_nome }}</span>
+                <span>{{ buraco.created_at|date:"d/m/Y H:i" }}</span>
+            </div>
+
+            <div class="post-actions">
+                <button
+                    id="btnLikeDetalhe"
+                    class="btn-like {% if buraco.curtido %}curtido{% endif %}"
+                    data-url="{% url 'curtirBuraco' buraco.id %}">
+                    <i class='bx {% if buraco.curtido %}bxs-heart{% else %}bx-heart{% endif %}'></i>
+                    <span class="like-count">{{ buraco.likes.count }}</span>
+                </button>
+
+                <button type="button" id="btnFocarComentarioDetalhe" class="btn-comentar">
+                    <i class="bx bx-message-dots"></i>
+                    <span id="contadorComentariosDetalhe">{{ buraco.comentarios.count }}</span>
+                </button>
+
+                <button
+                    type="button"
+                    id="btnReportarDetalhe"
+                    class="btn-reportar-feed"
+                    data-url="{% url 'reportarBuraco' buraco.id %}">
+                    <i class='bx bx-error-circle'></i>
+                    <span>Reportar</span>
+                </button>
+            </div>
+
+            <div id="listaComentariosDetalhe" class="comentarios-detalhe">
+                {% for comentario in buraco.comentarios.all %}
+                    {% if not comentario.resposta_de %}
+                        <div
+                            class="comentario-item"
+                            data-comentario-id="{{ comentario.id }}"
+                            data-username="{{ comentario.usuario.username }}"
+                            data-like-url="{% url 'curtirComentario' comentario.id %}"
+                            data-delete-url="{% url 'excluirComentario' comentario.id %}">
+                            <div class="avatar comentario-avatar">
+                                {% if comentario.usuario.foto %}
+                                    <img src="{{ comentario.usuario.foto.url }}" alt="Foto">
+                                {% else %}
+                                    {{ comentario.usuario.username|slice:":1"|upper }}
+                                {% endif %}
+                            </div>
+                            <div class="comentario-conteudo">
+                                <p>
+                                    <strong>@{{ comentario.usuario.username }}</strong>
+                                    {% if comentario.usuario.is_staff or comentario.usuario.is_superuser %}
+                                        <span class="selo-admin selo-admin-comentario"><i class='bx bxs-badge-check'></i> admin</span>
+                                    {% elif comentario.usuario.verificado %}
+                                        <span class="selo-verificado selo-verificado-comentario" title="Colaborador verificado"><i class='bx bxs-check-circle'></i></span>
+                                    {% endif %}
+                                    {{ comentario.texto }}
+                                </p>
+                                <span class="comentario-data">{{ comentario.created_at|date:"d/m/Y H:i" }}</span>
+                                <div class="comentario-acoes">
+                                    <button type="button" class="btn-curtir-comentario">
+                                        <i class='bx bx-heart'></i>
+                                        <span>{{ comentario.likes.count }}</span>
+                                    </button>
+                                    <button type="button" class="btn-responder-comentario">Responder</button>
+                                    {% if request.user.id == comentario.usuario.id or request.user.id == buraco.usuario.id %}
+                                        <button type="button" class="btn-excluir-comentario">Apagar</button>
+                                    {% endif %}
+                                </div>
+
+                                <div class="comentario-respostas">
+                                    {% for resposta in comentario.respostas.all %}
+                                        <div
+                                            class="comentario-item comentario-resposta"
+                                            data-comentario-id="{{ resposta.id }}"
+                                            data-username="{{ resposta.usuario.username }}"
+                                            data-like-url="{% url 'curtirComentario' resposta.id %}"
+                                            data-delete-url="{% url 'excluirComentario' resposta.id %}">
+                                            <div class="avatar comentario-avatar">
+                                                {% if resposta.usuario.foto %}
+                                                    <img src="{{ resposta.usuario.foto.url }}" alt="Foto">
+                                                {% else %}
+                                                    {{ resposta.usuario.username|slice:":1"|upper }}
+                                                {% endif %}
+                                            </div>
+                                            <div class="comentario-conteudo">
+                                                <p>
+                                                    <strong>@{{ resposta.usuario.username }}</strong>
+                                                    {% if resposta.usuario.is_staff or resposta.usuario.is_superuser %}
+                                                        <span class="selo-admin selo-admin-comentario"><i class='bx bxs-badge-check'></i> admin</span>
+                                                    {% elif resposta.usuario.verificado %}
+                                                        <span class="selo-verificado selo-verificado-comentario" title="Colaborador verificado"><i class='bx bxs-check-circle'></i></span>
+                                                    {% endif %}
+                                                    {{ resposta.texto }}
+                                                </p>
+                                                <span class="comentario-data">{{ resposta.created_at|date:"d/m/Y H:i" }}</span>
+                                                <div class="comentario-acoes">
+                                                    <button type="button" class="btn-curtir-comentario">
+                                                        <i class='bx bx-heart'></i>
+                                                        <span>{{ resposta.likes.count }}</span>
+                                                    </button>
+                                                    {% if request.user.id == resposta.usuario.id or request.user.id == buraco.usuario.id %}
+                                                        <button type="button" class="btn-excluir-comentario">Apagar</button>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% empty %}
+                    <p class="sem-comentarios">Nenhum comentário ainda.</p>
+                {% endfor %}
+            </div>
+
+            <form id="formComentarioDetalhe" class="form-comentario-post-modal" action="{% url 'comentarBuraco' buraco.id %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="resposta_de" value="">
+                <input type="text" name="comentario" placeholder="Adicionar comentário..." autocomplete="off" required>
+                <button type="submit">Publicar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="modalReportar" class="modal-reportar oculto">
+    <div class="modal-reportar-fundo"></div>
+
+    <form id="formReportar" class="modal-reportar-card">
+        {% csrf_token %}
+        <h2>Por que está reportando essa postagem?</h2>
+        <p>Escolha o motivo que melhor explica o problema.</p>
+
+        <div class="opcoes-reporte">
+            <label>
+                <input type="radio" name="motivo" value="Isso não é um buraco" required>
+                Isso não é um buraco
+            </label>
+            <label>
+                <input type="radio" name="motivo" value="Esse buraco não é em São Luís">
+                Esse buraco não é em São Luís
+            </label>
+            <label>
+                <input type="radio" name="motivo" value="Esse buraco não é real">
+                Esse buraco não é real
+            </label>
+        </div>
+
+        <div class="acoes-reporte">
+            <button type="button" class="cancelar-reporte">Cancelar</button>
+            <button type="submit" class="confirmar-reporte">Reportar</button>
+        </div>
+    </form>
+</div>
+
+<script>
+function criarComentarioDetalhe(comentario) {
+    const item = document.createElement('div');
+    item.className = 'comentario-item';
+    item.dataset.comentarioId = comentario.id;
+    item.dataset.username = comentario.username;
+    item.dataset.likeUrl = "{% url 'curtirComentario' 0 %}".replace('/0/', `/${comentario.id}/`);
+    item.dataset.deleteUrl = "{% url 'excluirComentario' 0 %}".replace('/0/', `/${comentario.id}/`);
+
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar comentario-avatar';
+
+    if (comentario.foto_url) {
+        const img = document.createElement('img');
+        img.src = comentario.foto_url;
+        img.alt = 'Foto';
+        avatar.appendChild(img);
+    } else {
+        avatar.textContent = comentario.inicial || '?';
+    }
+
+    const conteudo = document.createElement('div');
+    conteudo.className = 'comentario-conteudo';
+
+    const texto = document.createElement('p');
+    const usuario = document.createElement('strong');
+    usuario.textContent = `@${comentario.username}`;
+    texto.appendChild(usuario);
+    if (comentario.admin) {
+        const seloAdmin = document.createElement('span');
+        seloAdmin.className = 'selo-admin selo-admin-comentario';
+        seloAdmin.innerHTML = "<i class='bx bxs-badge-check'></i> admin";
+        texto.appendChild(seloAdmin);
+    } else if (comentario.verificado) {
+        const seloVerificado = document.createElement('span');
+        seloVerificado.className = 'selo-verificado selo-verificado-comentario';
+        seloVerificado.title = 'Colaborador verificado';
+        seloVerificado.innerHTML = "<i class='bx bxs-check-circle'></i>";
+        texto.appendChild(seloVerificado);
+    }
+    texto.append(` ${comentario.texto}`);
+
+    const data = document.createElement('span');
+    data.className = 'comentario-data';
+    data.textContent = comentario.data;
+
+    const acoes = document.createElement('div');
+    acoes.className = 'comentario-acoes';
+    acoes.innerHTML = `
+        <button type="button" class="btn-curtir-comentario">
+            <i class='bx bx-heart'></i>
+            <span>${comentario.likes || 0}</span>
+        </button>
+        ${comentario.resposta_de ? '' : '<button type="button" class="btn-responder-comentario">Responder</button>'}
+        ${comentario.pode_excluir ? '<button type="button" class="btn-excluir-comentario">Apagar</button>' : ''}
+    `;
+
+    conteudo.appendChild(texto);
+    conteudo.appendChild(data);
+    conteudo.appendChild(acoes);
+
+    if (!comentario.resposta_de) {
+        const respostas = document.createElement('div');
+        respostas.className = 'comentario-respostas';
+        conteudo.appendChild(respostas);
+    }
+
+    item.appendChild(avatar);
+    item.appendChild(conteudo);
+
+    return item;
+}
+
+const btnLikeDetalhe = document.getElementById('btnLikeDetalhe');
+const formComentarioDetalhe = document.getElementById('formComentarioDetalhe');
+const listaComentariosDetalhe = document.getElementById('listaComentariosDetalhe');
+const btnFocarComentarioDetalhe = document.getElementById('btnFocarComentarioDetalhe');
+const btnReportarDetalhe = document.getElementById('btnReportarDetalhe');
+const modalReportar = document.getElementById('modalReportar');
+const formReportar = document.getElementById('formReportar');
+const inputRespostaDetalhe = formComentarioDetalhe.querySelector('input[name="resposta_de"]');
+const inputTextoDetalhe = formComentarioDetalhe.querySelector('input[name="comentario"]');
+const postMenu = document.querySelector('.post-menu');
+const formExcluirPost = document.querySelector('.form-excluir-post');
+
+if (postMenu) {
+    const botaoMenu = postMenu.querySelector('.btn-post-menu');
+    const opcoesMenu = postMenu.querySelector('.post-menu-opcoes');
+
+    botaoMenu.addEventListener('click', (event) => {
+        event.stopPropagation();
+        opcoesMenu.classList.toggle('oculto');
+    });
+
+    document.addEventListener('click', () => {
+        opcoesMenu.classList.add('oculto');
+    });
+}
+
+if (formExcluirPost) {
+    formExcluirPost.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const response = await fetch(formExcluirPost.action, {
+            method: 'POST',
+            body: new FormData(formExcluirPost),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const card = document.querySelector('.detalhe-post-card');
+        if (card) {
+            card.remove();
+        }
+    });
+}
+
+btnLikeDetalhe.addEventListener('click', async () => {
+    const response = await fetch(btnLikeDetalhe.dataset.url, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    });
+    const data = await response.json();
+
+    btnLikeDetalhe.querySelector('.like-count').innerText = data.likes;
+    btnLikeDetalhe.classList.toggle('curtido', data.curtido);
+    const icone = btnLikeDetalhe.querySelector('i');
+    icone.classList.toggle('bx-heart', !data.curtido);
+    icone.classList.toggle('bxs-heart', data.curtido);
+});
+
+btnFocarComentarioDetalhe.addEventListener('click', () => {
+    formComentarioDetalhe.querySelector('input[name="comentario"]').focus();
+});
+
+formComentarioDetalhe.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const input = formComentarioDetalhe.querySelector('input[name="comentario"]');
+    const botao = formComentarioDetalhe.querySelector('button[type="submit"]');
+
+    if (!input.value.trim()) {
+        return;
+    }
+
+    botao.disabled = true;
+
+    try {
+        const response = await fetch(formComentarioDetalhe.action, {
+            method: 'POST',
+            body: new FormData(formComentarioDetalhe),
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const comentario = await response.json();
+        const vazio = listaComentariosDetalhe.querySelector('.sem-comentarios');
+
+        if (vazio) {
+            vazio.remove();
+        }
+
+        if (comentario.resposta_de) {
+            const comentarioPai = listaComentariosDetalhe.querySelector(`[data-comentario-id="${comentario.resposta_de}"]`);
+            const respostas = comentarioPai ? comentarioPai.querySelector('.comentario-respostas') : null;
+
+            if (respostas) {
+                const respostaElemento = criarComentarioDetalhe(comentario);
+                respostaElemento.classList.add('comentario-resposta');
+                respostas.appendChild(respostaElemento);
+            }
+        } else {
+            listaComentariosDetalhe.appendChild(criarComentarioDetalhe(comentario));
+        }
+
+        document.getElementById('contadorComentariosDetalhe').innerText = comentario.total_comentarios;
+        input.value = '';
+        inputRespostaDetalhe.value = '';
+        input.placeholder = 'Adicionar comentário...';
+    } finally {
+        botao.disabled = false;
+        input.focus();
+    }
+});
+
+listaComentariosDetalhe.addEventListener('click', async (event) => {
+    const btnCurtir = event.target.closest('.btn-curtir-comentario');
+    const btnResponder = event.target.closest('.btn-responder-comentario');
+    const btnExcluir = event.target.closest('.btn-excluir-comentario');
+    const comentarioItem = event.target.closest('.comentario-item');
+
+    if (!comentarioItem) {
+        return;
+    }
+
+    if (btnCurtir) {
+        const response = await fetch(comentarioItem.dataset.likeUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+        btnCurtir.classList.toggle('curtido', data.curtido);
+        btnCurtir.querySelector('i').classList.toggle('bxs-heart', data.curtido);
+        btnCurtir.querySelector('i').classList.toggle('bx-heart', !data.curtido);
+        btnCurtir.querySelector('span').innerText = data.likes;
+    }
+
+    if (btnResponder) {
+        inputRespostaDetalhe.value = comentarioItem.dataset.comentarioId;
+        inputTextoDetalhe.placeholder = `Responder @${comentarioItem.dataset.username}...`;
+        inputTextoDetalhe.focus();
+    }
+
+    if (btnExcluir) {
+        const response = await fetch(comentarioItem.dataset.deleteUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+        comentarioItem.remove();
+        document.getElementById('contadorComentariosDetalhe').innerText = data.total_comentarios;
+    }
+});
+
+btnReportarDetalhe.addEventListener('click', () => {
+    formReportar.action = btnReportarDetalhe.dataset.url;
+    formReportar.reset();
+    modalReportar.classList.remove('oculto');
+});
+
+document.querySelector('.modal-reportar-fundo').addEventListener('click', () => {
+    modalReportar.classList.add('oculto');
+});
+
+document.querySelector('.cancelar-reporte').addEventListener('click', () => {
+    modalReportar.classList.add('oculto');
+});
+
+formReportar.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const response = await fetch(formReportar.action, {
+        method: 'POST',
+        body: new FormData(formReportar),
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    });
+
+    if (!response.ok) {
+        return;
+    }
+
+    const data = await response.json();
+    btnReportarDetalhe.classList.add('reportado');
+    btnReportarDetalhe.querySelector('span').innerText = 'Reportado';
+    modalReportar.classList.add('oculto');
+
+    if (data.removido) {
+        document.querySelector('.detalhe-post-card').remove();
+    }
+});
+
+document.querySelectorAll('.form-status-buraco').forEach(form => {
+    const select = form.querySelector('select[name="status"]');
+    const statusVisual = form.parentElement.querySelector('.status-buraco');
+
+    select.addEventListener('change', async () => {
+        select.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('status', select.value);
+
+            const response = await fetch(form.dataset.url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': form.querySelector('input[name="csrfmiddlewaretoken"]').value,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+            statusVisual.textContent = data.status_nome;
+            statusVisual.className = `status-buraco status-${data.status_classe}`;
+        } finally {
+            select.disabled = false;
+        }
+    });
+});
+</script>
+
+{% endblock %}

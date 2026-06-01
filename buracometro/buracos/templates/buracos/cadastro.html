@@ -1,4 +1,4 @@
-{% extends 'buracos/template.html' %}
+{% extends 'principal/principal.html' %}
 {% load static %}
 
 {% block css %}
@@ -28,31 +28,26 @@ Cadastro de buracos
     </div>
     <div class="content">
         <div class="area-itens">
-            <div class="mb-3">
-                <label class="form-label">Título</label>
-                <input 
-                    id="iptTitulo" 
-                    class="form-control" 
-                    name="titulo" 
-                    type="text" 
-                    value="{{titulo}}">
-            </div>
+
+            <input 
+                id="iptTitulo" 
+                name="titulo" 
+                type="hidden" 
+                value="Buraco registrado" required>
+          
             <div class="mb-3">
                 <label class="form-label">Descricao</label>
                 <textarea 
                     id="iptDescricao" 
                     class="form-control" 
-                    name="descricao">{{descricao}}</textarea>
+                    name="descricao" required>{{descricao}}</textarea>
             </div>
             <div class="mb-3">
-                <label class="form-label">Local</label>
-                <button 
-                    id="btnSelecionarLocal"
-                    type="button" 
-                    class="btn btn-def">
-                    <!-- href="{% url 'cadastroSelecionarLocalView' %}"> -->
+                <label class="form-label">Local: </label>
+                <button id="btnSelecionarLocal" type="button" class="btn-local">
                     Selecionar local
                 </button>
+
                 <span>{{endereco}}</span>
                 <input 
                     id="iptCoordenadas" 
@@ -66,7 +61,10 @@ Cadastro de buracos
                     value="{{endereco}}">
             </div>
             <div class="mb-3">
-                <label class="form-label">Tamanho do buraco</label>
+                <div class="campo-tamanho-topo">
+                    <label class="form-label">Tamanho do buraco</label>
+                    <strong id="labelTamanhoBuraco" class="valor-tamanho">Pequeno</strong>
+                </div>
                 <input
                     id="iptTamanho" 
                     type="range" 
@@ -77,34 +75,36 @@ Cadastro de buracos
                     max="4" 
                     step="1" 
                     id="customRange3">
+                <div class="escala-tamanho">
+                    <span>Pequeno</span>
+                    <span>Médio</span>
+                    <span>Grande</span>
+                    <span>Gigante</span>
+                </div>
             </div>
         </div>
         <div class="area-imagem">
-            <div class="mb-3">
-                <label class="form-label">Inserir imagem</label>
-                <div id="area-foto" class="area-foto">
-                    <div class="content">
-                        <i class="icone custom-size fa-solid fa-image"></i>
-                    </div>
+            <label class="upload-card" for="iptEscolherArquivo">
+                <div id="previewImagem" class="preview-imagem">
+                    <i class="fa-solid fa-image"></i>
+                    <span>Escolher imagem</span>
                 </div>
-            </div>
-            <div>
-                <input 
-                    id="iptEscolherArquivo" 
-                    type="file" 
-                    class="btn btn-def" 
-                    name="imagem"
-                    accept="image/*" 
-                    value="Procurar">
-            </div>
+            </label>
+            <button id="btnRemoverImagem" class="btn-remover-imagem oculto" type="button" aria-label="Remover imagem">
+                x
+            </button>
+
+            <input 
+                id="iptEscolherArquivo" 
+                type="file" 
+                name="imagem"
+                accept="image/*" required>
         </div>
     </div>
     <div>
-        <button 
-            id="btnEnviar" 
-            class="btn btn-primary btn-large centered" 
-            type="button"
-            >Enviar</button>
+        <button id="btnEnviar" class="btn-form btn-enviar" type="submit">
+            Enviar
+        </button>
     </div>
 </form>
 <form id="formPassandoDados" action="{% url 'cadastroSelecionarLocalView' %}" method="post">

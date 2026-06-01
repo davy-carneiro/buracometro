@@ -12,13 +12,15 @@ class LoginRequiredMiddleware:
             reverse('register'), 
         ]
 
+        # AJUSTE: Corrigido '/cadastrar' para '/cadastro' e adicionado tratamento para arquivos estáticos
         if not request.user.is_authenticated \
-            and request.path \
-            not in urls_liberadas \
+            and request.path not in urls_liberadas \
             and not request.path.startswith((
                 '/admin',
                 '/login',
-                '/cadastrar'
+                '/cadastro',   # Libera a rota de processamento do cadastro (/cadastro/cadastrar)
+                '/static/',    # Libera os arquivos CSS/JS na tela de login
+                '/media/'      # Libera imagens de mídia se houver
             )):
             return redirect(reverse('login'))
         

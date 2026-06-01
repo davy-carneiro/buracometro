@@ -1,6 +1,5 @@
-from django.contrib import admin
-from django.urls import path, include
-from .views import LoginView, RegisterView, registerStore, loginAction
+from django.urls import path
+from .views import LoginView, RegisterView, registerStore, loginAction, logoutAction, perfilView, perfilPublicoView, editarPerfilView
 
 urlpatterns = [
     # path('', IndexView.as_view(), name='inicio'),
@@ -8,4 +7,8 @@ urlpatterns = [
     path('login/logar', loginAction, name='loginAction'),
     path('cadastro', RegisterView.as_view(), name='register'),
     path('cadastro/cadastrar', registerStore, name='registerStore'),
+    path('perfil/', perfilView, name='perfilView'),
+    path('perfil/editar/', editarPerfilView, name='editarPerfilView'),
+    path('perfil/<str:username>/', perfilPublicoView, name='perfilPublicoView'),
+    path('logout/', logoutAction, name='logout'), 
 ]

@@ -1,18 +1,19 @@
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView
-import os
-import shutil
-from django.conf import settings
 from django.urls import reverse
 from urllib.parse import urlencode
 from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.db import IntegrityError
-from datetime import datetime
-from .models import Buraco
+from django.contrib.auth.decorators import login_required
+from .models import Buraco, Like, Comentario, LikeComentario, Reporte
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.utils import timezone
+from django.db.models import Count, F, IntegerField, ExpressionWrapper
+from principal.models import Notificacao
 
-# class CadastroView(TemplateView):
-#     template_name = "buracos/cadastro.html"
 
 def cadastroView(request):
     titulo = request.GET.get('titulo', '')
@@ -31,8 +32,6 @@ def cadastroView(request):
 
     return render(request, 'buracos/cadastro.html', variaveis)
 
-# class CadastroSelecionarLocalView(TemplateView):
-#     template_name = "buracos/cadastro-selecionar-local.html"
 
 def cadastroSelecionarLocalView(request):
     titulo = ''
@@ -52,15 +51,32 @@ def cadastroSelecionarLocalView(request):
 
     return render(request, "buracos/cadastro-selecionar-local.html", variaveis)
 
-# class VerBuracosView(TemplateView):
-#     template_name = "buracos/ver-buracos.html"
 
-def verBuracosView(request):
-    buracos = Buraco.objects.all()
+def popularView(request):
+    buracos = Buraco.objects.annotate(
+        total_likes=Count('likes', distinct=True),
+        total_comentarios=Count('comentarios', distinct=True),
+    ).annotate(
+        engajamento=ExpressionWrapper(
+            F('total_likes') + F('total_comentarios'),
+            output_field=IntegerField()
+        )
+    ).order_by('-engajamento', '-total_likes', '-total_comentarios', '-created_at')
+
+    for buraco in buracos:
+        buraco.curtido = request.user.is_authenticated and Like.objects.filter(
+            usuario=request.user,
+            buraco=buraco
+        ).exists()
+
     variaveis = {
         'rows': buracos,
     }
-    return render(request, 'buracos/ver-buracos.html', variaveis)
+    return render(request, 'buracos/explorar.html', variaveis)
+
+
+def explorarView(request):
+    return popularView(request)
 
 def passarLocalParaCadastroView(request):
     if request.method == "POST":
@@ -82,6 +98,7 @@ def passarLocalParaCadastroView(request):
 
     return redirect(url)
 
+@login_required
 def cadastroStore(request):
     if request.method == "POST":
         titulo = request.POST.get("titulo")
@@ -89,49 +106,334 @@ def cadastroStore(request):
         coordenadas = request.POST.get("coordenadas")
         endereco = request.POST.get("endereco")
         tamanho = request.POST.get("tamanho")
-        imagem = request.FILES["imagem"]
+        imagem = request.FILES.get("imagem")
 
-        caminho_pasta = os.path.join(settings.BASE_DIR, 'paginas/static/paginas/image-users')  # Pasta de destino
-        nome_arquivo = imagem.name
+        if not imagem:
+            messages.error(request, "A imagem do buraco é obrigatória.")
+            return redirect("cadastrarView")
 
-        os.makedirs(caminho_pasta, exist_ok=True)
-
-        caminho_arquivo = os.path.join(caminho_pasta, nome_arquivo)
-
-        if os.path.exists(caminho_arquivo):
-            base_nome, extensao = os.path.splitext(nome_arquivo)
-            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-            nome_arquivo = f"{base_nome}_{timestamp}{extensao}"
-            caminho_arquivo = os.path.join(caminho_pasta, nome_arquivo)
+        if not coordenadas or not endereco:
+            messages.error(request, "Selecione a localização do buraco no mapa.")
+            return redirect("cadastrarView")
 
         try:
-            buraco = Buraco.objects.create (
-                titulo = titulo,
-                descricao = descricao,
-                local = coordenadas,
-                endereco = endereco,
-                tamanho = tamanho,
-                url_imagem = nome_arquivo,
+            Buraco.objects.create(
+                titulo=titulo,
+                descricao=descricao,
+                local=coordenadas,
+                endereco=endereco,
+                tamanho=tamanho,
+                imagem=imagem,
+                usuario=request.user,
             )
 
-            buraco.save()
-
-            with open(caminho_arquivo, 'wb+') as destino:
-                shutil.copyfileobj(imagem.file, destino)
-
-            msg = "Buraco cadastrado com sucesso! " \
-                f"Veja mais em <a href='{reverse('verBuracosView')}'>seus buracos</a>"
+            msg = "Buraco cadastrado com sucesso!"
             messages.success(request, msg)
+
         except IntegrityError as e:
             msg = f"Erro ao criar buraco: {e}"
             messages.error(request, msg)
 
-        # print(titulo)
-        # print(descricao)
-        # print(endereco)
-        # print(coordenadas)
-        # print(tamanho)
-        # print(imagem)
-        # print(nome_arquivo)
+    return redirect('cadastrarView')
 
-    return redirect('cadastrarView')    
+
+def detalheBuracoView(request, id):
+    buraco = get_object_or_404(Buraco, id=id)
+    buraco.curtido = request.user.is_authenticated and Like.objects.filter(
+        usuario=request.user,
+        buraco=buraco
+    ).exists()
+
+    return render(request, 'buracos/detalhe-buraco.html', {
+        'buraco': buraco
+    }) 
+
+@login_required
+def excluirBuracoView(request, buraco_id):
+    buraco = get_object_or_404(Buraco, id=buraco_id)
+
+    if buraco.usuario != request.user:
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"erro": "VocÃª nÃ£o pode excluir essa postagem."}, status=403)
+
+        messages.error(request, "VocÃª nÃ£o pode excluir essa postagem.")
+        return redirect(request.META.get('HTTP_REFERER', 'inicioView'))
+
+    if request.method == "POST":
+        Notificacao.objects.filter(buraco=buraco).delete()
+        buraco.delete()
+
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"excluido": True})
+
+        messages.success(request, "Postagem excluÃ­da com sucesso.")
+        return redirect(request.META.get('HTTP_REFERER', 'inicioView'))
+
+    return redirect(request.META.get('HTTP_REFERER', 'inicioView'))
+
+
+@login_required
+def atualizarStatusBuracoView(request, buraco_id):
+    buraco = get_object_or_404(Buraco, id=buraco_id)
+
+    if not (request.user.is_staff or request.user.is_superuser):
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"erro": "Apenas administradores podem alterar o status."}, status=403)
+
+        messages.error(request, "Apenas administradores podem alterar o status.")
+        return redirect(request.META.get('HTTP_REFERER', 'inicioView'))
+
+    if request.method != "POST":
+        return redirect(request.META.get('HTTP_REFERER', 'inicioView'))
+
+    novo_status = request.POST.get("status", "")
+    status_validos = dict(Buraco.STATUS_CHOICES)
+
+    if novo_status not in status_validos:
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"erro": "Status invalido."}, status=400)
+
+        messages.error(request, "Status invalido.")
+        return redirect(request.META.get('HTTP_REFERER', 'inicioView'))
+
+    buraco.status = novo_status
+    buraco.save(update_fields=["status", "updated_at"])
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({
+            "status": buraco.status,
+            "status_nome": buraco.status_nome,
+            "status_classe": buraco.status_classe,
+        })
+
+    messages.success(request, "Status atualizado com sucesso.")
+    return redirect(request.META.get('HTTP_REFERER', 'inicioView'))
+
+
+@login_required
+def curtirBuracoView(request, buraco_id):
+    buraco = get_object_or_404(Buraco, id=buraco_id)
+
+    like, created = Like.objects.get_or_create(
+        usuario=request.user,
+        buraco=buraco
+    )
+
+    curtido = True
+
+    if buraco.usuario and buraco.usuario != request.user:
+        notificacao_like = Notificacao.objects.filter(
+            destinatario=buraco.usuario,
+            ator=request.user,
+            buraco=buraco,
+            tipo="like"
+        )
+
+    if created and buraco.usuario and buraco.usuario != request.user:
+        notificacao_like.delete()
+        Notificacao.objects.create(
+            destinatario=buraco.usuario,
+            ator=request.user,
+            buraco=buraco,
+            tipo="like",
+            mensagem="curtiu sua postagem."
+        )
+
+    if not created:
+        like.delete()
+        curtido = False
+
+        if buraco.usuario and buraco.usuario != request.user:
+            notificacao_like.delete()
+
+    return JsonResponse({
+        'likes': buraco.likes.count(),
+        'curtido': curtido
+    })
+    
+@login_required
+def reportarBuracoView(request, buraco_id):
+
+    buraco = get_object_or_404(Buraco, id=buraco_id)
+    motivo = request.POST.get("motivo", "").strip()
+
+    reporte, created = Reporte.objects.get_or_create(
+        usuario=request.user,
+        buraco=buraco,
+        defaults={"motivo": motivo}
+    )
+
+    if not created and motivo:
+        reporte.motivo = motivo
+        reporte.save(update_fields=["motivo"])
+
+    total_reportes = buraco.reportes.count()
+    removido = total_reportes >= 5
+
+    if removido:
+        if buraco.usuario:
+            buraco.usuario.postagens_removidas_por_reporte += 1
+            buraco.usuario.save(update_fields=["postagens_removidas_por_reporte"])
+
+            Notificacao.objects.create(
+                destinatario=buraco.usuario,
+                buraco=buraco,
+                tipo="remocao",
+                mensagem="Sua postagem foi removida por receber muitas denúncias."
+            )
+
+        buraco.delete()
+
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse({
+            "reportado": True,
+            "total_reportes": total_reportes,
+            "removido": removido,
+        })
+
+    return redirect(request.META.get('HTTP_REFERER'))
+
+@login_required
+def comentarBuracoView(request, buraco_id):
+
+    if request.method == "POST":
+
+        buraco = get_object_or_404(Buraco, id=buraco_id)
+
+        texto = request.POST.get("comentario", "").strip()
+
+        if texto:
+
+            resposta_de_id = request.POST.get("resposta_de")
+            comentario_pai = None
+
+            if resposta_de_id:
+                comentario_pai = get_object_or_404(
+                    Comentario,
+                    id=resposta_de_id,
+                    buraco=buraco,
+                    resposta_de__isnull=True
+                )
+
+            comentario = Comentario.objects.create(
+                usuario=request.user,
+                buraco=buraco,
+                texto=texto,
+                resposta_de=comentario_pai
+            )
+
+            if comentario_pai and comentario_pai.usuario != request.user:
+                Notificacao.objects.create(
+                    destinatario=comentario_pai.usuario,
+                    ator=request.user,
+                    buraco=buraco,
+                    comentario=comentario_pai,
+                    tipo="resposta_comentario",
+                    mensagem="respondeu seu comentario."
+                )
+            elif buraco.usuario and buraco.usuario != request.user:
+                Notificacao.objects.create(
+                    destinatario=buraco.usuario,
+                    ator=request.user,
+                    buraco=buraco,
+                    tipo="comentario",
+                    mensagem="comentou na sua postagem."
+                )
+
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                foto_url = request.user.foto.url if getattr(request.user, "foto", None) else ""
+
+                return JsonResponse({
+                    "id": comentario.id,
+                    "texto": comentario.texto,
+                    "username": request.user.username,
+                    "foto_url": foto_url,
+                    "inicial": request.user.username[:1].upper(),
+                    "admin": request.user.is_staff or request.user.is_superuser,
+                    "verificado": request.user.verificado,
+                    "data": timezone.localtime(comentario.created_at).strftime("%d/%m/%Y %H:%M"),
+                    "resposta_de": comentario_pai.id if comentario_pai else None,
+                    "pode_excluir": True,
+                    "curtido": False,
+                    "likes": 0,
+                    "total_comentarios": buraco.comentarios.count(),
+                })
+
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"erro": "Comentário vazio."}, status=400)
+
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
+@login_required
+def curtirComentarioView(request, comentario_id):
+    comentario = get_object_or_404(Comentario, id=comentario_id)
+
+    like, created = LikeComentario.objects.get_or_create(
+        usuario=request.user,
+        comentario=comentario
+    )
+
+    curtido = True
+
+    if comentario.usuario != request.user:
+        notificacao_like = Notificacao.objects.filter(
+            destinatario=comentario.usuario,
+            ator=request.user,
+            buraco=comentario.buraco,
+            comentario=comentario,
+            tipo="like_comentario"
+        )
+
+    if created and comentario.usuario != request.user:
+        notificacao_like.delete()
+        Notificacao.objects.create(
+            destinatario=comentario.usuario,
+            ator=request.user,
+            buraco=comentario.buraco,
+            comentario=comentario,
+            tipo="like_comentario",
+            mensagem="curtiu seu comentario."
+        )
+
+    if not created:
+        like.delete()
+        curtido = False
+
+        if comentario.usuario != request.user:
+            notificacao_like.delete()
+
+    return JsonResponse({
+        "curtido": curtido,
+        "likes": comentario.likes.count(),
+    })
+
+
+@login_required
+def excluirComentarioView(request, comentario_id):
+    comentario = get_object_or_404(Comentario, id=comentario_id)
+    buraco = comentario.buraco
+
+    pode_excluir = comentario.usuario == request.user or buraco.usuario == request.user
+
+    if not pode_excluir:
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({"erro": "VocÃª nÃ£o pode excluir esse comentÃ¡rio."}, status=403)
+
+        messages.error(request, "VocÃª nÃ£o pode excluir esse comentÃ¡rio.")
+        return redirect(request.META.get('HTTP_REFERER', 'inicioView'))
+
+    if request.method == "POST":
+        Notificacao.objects.filter(comentario=comentario).delete()
+        comentario.delete()
+        total_comentarios = buraco.comentarios.count()
+
+        if request.headers.get("x-requested-with") == "XMLHttpRequest":
+            return JsonResponse({
+                "excluido": True,
+                "total_comentarios": total_comentarios,
+            })
+
+        messages.success(request, "ComentÃ¡rio excluÃ­do.")
+
+    return redirect(request.META.get('HTTP_REFERER', 'inicioView'))

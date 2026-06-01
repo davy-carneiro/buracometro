@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let areaFoto = document.getElementById('area-foto');
     let areaBotoesFoto = document.getElementById('area-botoes-foto');
     let iptEscolherArquivo = document.getElementById('iptEscolherArquivo');
+    let btnRemoverImagem = document.getElementById('btnRemoverImagem');
     let btnMaximizarImagem = document.getElementById('btnMaximizarImagem');
 
     let btnSelecionarLocal = document.getElementById('btnSelecionarLocal');
@@ -10,6 +11,14 @@ document.addEventListener('DOMContentLoaded', function () {
     let btnAvancarLocal = document.getElementById('btnAvancarLocal');
 
     let btnEnviar = document.getElementById('btnEnviar');
+    let labelTamanhoBuraco = document.getElementById('labelTamanhoBuraco');
+    const nomesTamanho = {
+        1: 'Pequeno',
+        2: 'Médio',
+        3: 'Grande',
+        4: 'Gigante',
+    };
+    const imagemPendenteKey = 'buracometro.imagemCadastroPendente';
     // let areaMapaOculto = document.getElementById('areaMapaOculto');
     // let mapa = document.getElementById('mapa');
     // var map = L.map('mapa').setView([-2.5184, -44.2054], 16);
@@ -27,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('iptHiddenDescricao').value = descricao;
         document.getElementById('iptHiddenTamanho').value  = tamanho;
 
+        salvarImagemTemporaria();
         form.submit();
     });
 
@@ -49,7 +59,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     iptEscolherArquivo
     .addEventListener('change', function () {
-        mostrarImagem(this, areaFoto);
+        if (areaFoto) {
+            mostrarImagem(this, areaFoto);
+        }
     });
 
     btnEnviar
@@ -57,9 +69,82 @@ document.addEventListener('DOMContentLoaded', function () {
         let form = document.getElementById('formularioCadastroBuracos');
 
         if (validarCampos()) {
+            sessionStorage.removeItem(imagemPendenteKey);
             form.submit();
         }
-    })
+    });
+
+    function atualizarLabelTamanho() {
+        const valor = document.getElementById('iptTamanho').value;
+
+        if (labelTamanhoBuraco) {
+            labelTamanhoBuraco.innerText = nomesTamanho[valor] || 'Pequeno';
+        }
+    }
+
+    document.getElementById('iptTamanho').addEventListener('input', atualizarLabelTamanho);
+    atualizarLabelTamanho();
+
+    function salvarImagemTemporaria() {
+        const arquivo = iptEscolherArquivo.files[0];
+
+        if (!arquivo) {
+            return;
+        }
+
+        const leitor = new FileReader();
+
+        leitor.onload = function (event) {
+            sessionStorage.setItem(imagemPendenteKey, JSON.stringify({
+                nome: arquivo.name,
+                tipo: arquivo.type,
+                dados: event.target.result,
+            }));
+        };
+
+        leitor.readAsDataURL(arquivo);
+    }
+
+    function dataUrlParaArquivo(dataUrl, nome, tipo) {
+        const partes = dataUrl.split(',');
+        const binario = atob(partes[1]);
+        const bytes = new Uint8Array(binario.length);
+
+        for (let i = 0; i < binario.length; i++) {
+            bytes[i] = binario.charCodeAt(i);
+        }
+
+        return new File([bytes], nome, { type: tipo });
+    }
+
+    function restaurarImagemTemporaria() {
+        const imagemSalva = sessionStorage.getItem(imagemPendenteKey);
+
+        if (!imagemSalva || iptEscolherArquivo.files.length > 0) {
+            return;
+        }
+
+        try {
+            const imagem = JSON.parse(imagemSalva);
+            const arquivo = dataUrlParaArquivo(imagem.dados, imagem.nome, imagem.tipo);
+            const arquivos = new DataTransfer();
+
+            arquivos.items.add(arquivo);
+            iptEscolherArquivo.files = arquivos.files;
+
+            if (previewImagem) {
+                previewImagem.innerHTML = `
+                    <img src="${imagem.dados}" alt="Prévia da imagem">
+                `;
+            }
+
+            if (btnRemoverImagem) {
+                btnRemoverImagem.classList.remove('oculto');
+            }
+        } catch (error) {
+            sessionStorage.removeItem(imagemPendenteKey);
+        }
+    }
 
     // L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -95,40 +180,91 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function validarCampos () {
-        let iptTitulo = document.getElementById('iptTitulo');
-        let iptCoordenadas = document.getElementById('iptCoordenadas');
-        let iptEndereco = document.getElementById('iptEndereco');
-        let iptTamanho  = document.getElementById('iptTamanho');
-        let iptImagem   = document.getElementById('iptEscolherArquivo');
+    let iptTitulo = document.getElementById('iptTitulo');
+    let iptCoordenadas = document.getElementById('iptCoordenadas');
+    let iptEndereco = document.getElementById('iptEndereco');
+    let iptTamanho  = document.getElementById('iptTamanho');
+    let iptImagem   = document.getElementById('iptEscolherArquivo');
 
-        let retorno = false;
-        let msg = '';
+    let titulo      = iptTitulo.value;
+    let coordenadas = iptCoordenadas.value;
+    let endereco    = iptEndereco.value;
+    let tamanho     = iptTamanho.value;
+    let imagem      = iptImagem.files[0];
 
-        let titulo      = iptTitulo.value;
-        let coordenadas = iptCoordenadas.value;
-        let endereco    = iptEndereco.value;
-        let tamanho     = iptTamanho.value;
-        let imagem      = iptImagem.value;
-
-        if (titulo.trim() == '') {
-            msg = 'O título não pode estar vazio!';
-        }
-        else if (coordenadas.trim() == '' || endereco.trim() == '') {
-            msg = 'Selecione um local antes de prosseguir!';
-        }
-        else if (!(parseInt(tamanho) >= 1 && parseInt(tamanho) <= 4)) {
-            msg = 'Tamanho inválido';
-        }
-        else if (imagem == '') {
-            msg = 'Selecione uma imagem antes';
-        }
-        else {
-            retorno = true;
-        }
-
-        if (retorno == false) 
-            alert(msg);
-
-        return retorno;
+    if (titulo.trim() == '') {
+        alert('O título não pode estar vazio!');
+        return false;
     }
+
+    if (coordenadas.trim() == '' || endereco.trim() == '') {
+        alert('Selecione um local antes de prosseguir!');
+        return false;
+    }
+
+    if (!(parseInt(tamanho) >= 1 && parseInt(tamanho) <= 4)) {
+        alert('Tamanho inválido!');
+        return false;
+    }
+
+    if (!imagem) {
+        alert('Selecione uma imagem antes!');
+        return false;
+    }
+
+    return true;
+}
+
+const inputImagem = document.getElementById("iptEscolherArquivo");
+const previewImagem = document.getElementById("previewImagem");
+
+function limparPreviewImagem() {
+    if (inputImagem) {
+        inputImagem.value = '';
+    }
+
+    if (previewImagem) {
+        previewImagem.innerHTML = `
+            <i class="fa-solid fa-image"></i>
+            <span>Escolher imagem</span>
+        `;
+    }
+
+    if (btnRemoverImagem) {
+        btnRemoverImagem.classList.add('oculto');
+    }
+
+    sessionStorage.removeItem(imagemPendenteKey);
+}
+
+if (inputImagem && previewImagem) {
+    inputImagem.addEventListener("change", function () {
+        const arquivo = this.files[0];
+
+        if (arquivo) {
+            const leitor = new FileReader();
+
+            leitor.onload = function (e) {
+                previewImagem.innerHTML = `
+                    <img src="${e.target.result}" alt="Prévia da imagem">
+                `;
+            };
+
+            leitor.readAsDataURL(arquivo);
+            salvarImagemTemporaria();
+
+            if (btnRemoverImagem) {
+                btnRemoverImagem.classList.remove('oculto');
+            }
+        } else {
+            limparPreviewImagem();
+        }
+    });
+
+    if (btnRemoverImagem) {
+        btnRemoverImagem.addEventListener('click', limparPreviewImagem);
+    }
+
+    restaurarImagemTemporaria();
+}
 });

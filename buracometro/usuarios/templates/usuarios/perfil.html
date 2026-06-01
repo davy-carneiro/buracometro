@@ -1,0 +1,814 @@
+{% extends 'principal/principal.html' %}
+{% load static %}
+
+{% block title %}
+Perfil
+{% endblock %}
+
+{% block content %}
+
+<div class="perfil-container">
+
+    <div class="perfil-header">
+
+        <div class="perfil-avatar">
+            {% if usuario.foto %}
+                <img src="{{ usuario.foto.url }}" alt="Foto de perfil">
+            {% else %}
+                {{ usuario.username|slice:":1"|upper }}
+            {% endif %}
+        </div>
+
+        <div>
+            <h1>
+                @{{ usuario.username }}
+                {% if usuario.is_staff or usuario.is_superuser %}
+                    <span class="selo-admin"><i class='bx bxs-badge-check'></i> admin</span>
+                {% elif usuario.verificado %}
+                    <span class="selo-verificado" title="Colaborador verificado"><i class='bx bxs-check-circle'></i></span>
+                {% endif %}
+            </h1>
+            <p>{{ usuario.name }}</p>
+            <p>
+                Perfil criado em {{ usuario.date_joined|date:"d/m/Y" }}
+            </p>
+            <a href="{% url 'editarPerfilView' %}" class="btn-editar-perfil">
+                Editar perfil
+            </a>
+        </div>
+    </div>
+
+    <div class="perfil-stats">
+        <div class="stat-card">
+            <h2>{{ buracos.count }}</h2>
+            <p>Buracos cadastrados</p>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="explorar-grid perfil-grid">
+    {% for buraco in buracos %}
+        <a 
+            href="{% url 'detalheBuracoView' buraco.id %}" 
+            class="explorar-item" 
+            data-index="{{ forloop.counter0 }}"
+            data-id="{{ buraco.id }}"
+            data-descricao="{{ buraco.descricao }}"
+            data-tamanho="{{ buraco.tamanho_nome }}"
+            data-status-valor="{{ buraco.status }}"
+            data-status="{{ buraco.status_nome }}"
+            data-status-classe="{{ buraco.status_classe }}"
+            data-likes="{{ buraco.likes.count }}"
+            data-comentarios="{{ buraco.comentarios.count }}"
+            data-curtido="{% if buraco.curtido %}true{% else %}false{% endif %}"
+            data-username="{{ usuario.username }}"
+            data-nome="{{ usuario.name }}"
+            data-admin="{% if usuario.is_staff or usuario.is_superuser %}true{% else %}false{% endif %}"
+            data-verificado="{% if usuario.verificado %}true{% else %}false{% endif %}"
+            data-endereco="{{ buraco.endereco }}"
+            data-like-url="{% url 'curtirBuraco' buraco.id %}"
+            data-comentar-url="{% url 'comentarBuraco' buraco.id %}"
+            data-reportar-url="{% url 'reportarBuraco' buraco.id %}"
+            data-status-url="{% url 'atualizarStatusBuraco' buraco.id %}"
+            data-excluir-url="{% url 'excluirBuraco' buraco.id %}"
+            data-pode-excluir="true">
+
+            {% if buraco.imagem %}
+                <img src="{{ buraco.imagem.url }}" alt="{{ buraco.titulo }}">
+            {% elif buraco.url_imagem %}
+                <img src="{% static 'image-users/' %}{{ buraco.url_imagem }}" alt="{{ buraco.titulo }}">
+            {% endif %}
+
+            <div class="explorar-overlay">
+                <span>
+                    <i class='bx {% if buraco.curtido %}bxs-heart{% else %}bx-heart{% endif %}'></i>
+                    {{ buraco.likes.count }}
+                </span>
+
+                <span>
+                    <i class='bx bx-message-dots'></i>
+                    {{ buraco.comentarios.count }}
+                </span>
+            </div>
+        </a>
+
+        <div class="comentarios-escondidos" id="comentarios-{{ buraco.id }}">
+            {% for comentario in buraco.comentarios.all %}
+                {% if not comentario.resposta_de %}
+                <div class="comentario-item" data-comentario-id="{{ comentario.id }}" data-username="{{ comentario.usuario.username }}" data-like-url="{% url 'curtirComentario' comentario.id %}" data-delete-url="{% url 'excluirComentario' comentario.id %}">
+                    <div class="avatar comentario-avatar">
+                        {% if comentario.usuario.foto %}
+                            <img src="{{ comentario.usuario.foto.url }}" alt="Foto">
+                        {% else %}
+                            {{ comentario.usuario.username|slice:":1"|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="comentario-conteudo">
+                        <p>
+                            <strong>@{{ comentario.usuario.username }}</strong>
+                            {% if comentario.usuario.is_staff or comentario.usuario.is_superuser %}
+                                <span class="selo-admin selo-admin-comentario"><i class='bx bxs-badge-check'></i> admin</span>
+                            {% elif comentario.usuario.verificado %}
+                                <span class="selo-verificado selo-verificado-comentario" title="Colaborador verificado"><i class='bx bxs-check-circle'></i></span>
+                            {% endif %}
+                            {{ comentario.texto }}
+                        </p>
+                        <span class="comentario-data">{{ comentario.created_at|date:"d/m/Y H:i" }}</span>
+                        <div class="comentario-acoes">
+                            <button type="button" class="btn-curtir-comentario">
+                                <i class='bx bx-heart'></i>
+                                <span>{{ comentario.likes.count }}</span>
+                            </button>
+                            <button type="button" class="btn-responder-comentario">Responder</button>
+                            <button type="button" class="btn-excluir-comentario">Apagar</button>
+                        </div>
+                        <div class="comentario-respostas">
+                            {% for resposta in comentario.respostas.all %}
+                                <div class="comentario-item comentario-resposta" data-comentario-id="{{ resposta.id }}" data-username="{{ resposta.usuario.username }}" data-like-url="{% url 'curtirComentario' resposta.id %}" data-delete-url="{% url 'excluirComentario' resposta.id %}">
+                                    <div class="avatar comentario-avatar">
+                                        {% if resposta.usuario.foto %}
+                                            <img src="{{ resposta.usuario.foto.url }}" alt="Foto">
+                                        {% else %}
+                                            {{ resposta.usuario.username|slice:":1"|upper }}
+                                        {% endif %}
+                                    </div>
+                                    <div class="comentario-conteudo">
+                                        <p>
+                                            <strong>@{{ resposta.usuario.username }}</strong>
+                                            {% if resposta.usuario.is_staff or resposta.usuario.is_superuser %}
+                                                <span class="selo-admin selo-admin-comentario"><i class='bx bxs-badge-check'></i> admin</span>
+                                            {% elif resposta.usuario.verificado %}
+                                                <span class="selo-verificado selo-verificado-comentario" title="Colaborador verificado"><i class='bx bxs-check-circle'></i></span>
+                                            {% endif %}
+                                            {{ resposta.texto }}
+                                        </p>
+                                        <span class="comentario-data">{{ resposta.created_at|date:"d/m/Y H:i" }}</span>
+                                        <div class="comentario-acoes">
+                                            <button type="button" class="btn-curtir-comentario">
+                                                <i class='bx bx-heart'></i>
+                                                <span>{{ resposta.likes.count }}</span>
+                                            </button>
+                                            <button type="button" class="btn-excluir-comentario">Apagar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% empty %}
+                <p class="sem-comentarios">Nenhum comentário ainda.</p>
+            {% endfor %}
+        </div>
+
+        {% empty %}
+            <p class="empty-feed">Você ainda não cadastrou nenhum buraco.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+<div id="modalPost" class="modal-post oculto">
+
+    <div class="modal-overlay"></div>
+
+    <button id="fecharModal" class="fechar-modal">
+        ✕
+    </button>
+
+    <button id="anteriorPost" class="seta-modal esquerda">
+        ❮
+    </button>
+
+    <div class="modal-conteudo modal-postagem-detalhe">
+
+        <div class="modal-post-header">
+            <div class="avatar">
+                {% if usuario.foto %}
+                    <img src="{{ usuario.foto.url }}" alt="Foto de perfil">
+                {% else %}
+                    {{ usuario.username|slice:":1"|upper }}
+                {% endif %}
+            </div>
+
+            <div>
+                <h3>
+                    <span id="modalUsername"></span>
+                    <span id="modalAdminSelo" class="selo-admin oculto"><i class='bx bxs-badge-check'></i> admin</span>
+                    <span id="modalVerificadoSelo" class="selo-verificado oculto" title="Colaborador verificado"><i class='bx bxs-check-circle'></i></span>
+                </h3>
+                <p id="modalEndereco"></p>
+                <small id="modalStatus" class="status-buraco"></small>
+                {% if request.user.is_staff or request.user.is_superuser %}
+                    <form id="modalStatusForm" class="form-status-buraco">
+                        {% csrf_token %}
+                        <select id="modalStatusSelect" name="status" aria-label="Alterar status da postagem">
+                            <option value="nao_arrumado">Ainda nao foi arrumado</option>
+                            <option value="em_obra">Em obra</option>
+                            <option value="arrumado">Ja arrumado</option>
+                        </select>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="modal-area-imagem">
+            <img id="modalImagem" src="" alt="Imagem">
+        </div>
+
+        <div class="modal-area-info">
+
+            <div class="modal-descricao">
+                <strong id="modalNome"></strong>
+                <span id="modalDescricao"></span>
+                <small id="modalTamanho" class="modal-tamanho"></small>
+            </div>
+
+            <div id="modalComentariosArea" class="modal-comentarios-area"></div>
+
+            <div class="modal-acoes">
+                <button type="button" id="btnLikeModal" class="btn-like-modal">
+                    <i class='bx bx-heart'></i>
+                    <span id="modalLikes"></span>
+                </button>
+
+                <button type="button" id="btnFocarComentarioModal" class="btn-comentar-modal">
+                    <i class='bx bx-message-dots'></i>
+                    <span id="modalComentarios"></span>
+                </button>
+
+                <button type="button" id="btnReportarModal" class="btn-reportar-modal">
+                    <i class='bx bx-error-circle'></i>
+                    <span>Reportar</span>
+                </button>
+
+                <div id="menuExcluirModal" class="post-menu post-menu-modal oculto">
+                    <button type="button" class="btn-post-menu" aria-label="Opcoes da postagem">
+                        <i class='bx bx-dots-horizontal-rounded'></i>
+                    </button>
+                    <form id="formExcluirModal" class="post-menu-opcoes form-excluir-post oculto" method="post">
+                        {% csrf_token %}
+                        <button type="submit">Excluir post</button>
+                    </form>
+                </div>
+            </div>
+
+            <form id="formComentarioPostModal" class="form-comentario-post-modal" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="resposta_de" value="">
+                <input
+                    type="text"
+                    name="comentario"
+                    placeholder="Adicionar comentário..."
+                    autocomplete="off"
+                    required>
+                <button type="submit">Publicar</button>
+            </form>
+
+        </div>
+    </div>
+
+    <button id="proximoPost" class="seta-modal direita">
+        ❯
+    </button>
+
+</div>
+
+<div id="modalReportar" class="modal-reportar oculto">
+    <div class="modal-reportar-fundo"></div>
+
+    <form id="formReportar" class="modal-reportar-card">
+        {% csrf_token %}
+        <h2>Por que está reportando essa postagem?</h2>
+        <p>Escolha o motivo que melhor explica o problema.</p>
+
+        <div class="opcoes-reporte">
+            <label>
+                <input type="radio" name="motivo" value="Isso não é um buraco" required>
+                Isso não é um buraco
+            </label>
+            <label>
+                <input type="radio" name="motivo" value="Esse buraco não é em São Luís">
+                Esse buraco não é em São Luís
+            </label>
+            <label>
+                <input type="radio" name="motivo" value="Esse buraco não é real">
+                Esse buraco não é real
+            </label>
+        </div>
+
+        <div class="acoes-reporte">
+            <button type="button" class="cancelar-reporte">Cancelar</button>
+            <button type="submit" class="confirmar-reporte">Reportar</button>
+        </div>
+    </form>
+</div>
+
+<script>
+const posts = document.querySelectorAll('.explorar-item');
+
+if (posts.length > 0) {
+    const modal = document.getElementById('modalPost');
+    const modalImg = document.getElementById('modalImagem');
+    const fechar = document.getElementById('fecharModal');
+    const overlay = document.querySelector('.modal-overlay');
+    const btnAnterior = document.getElementById('anteriorPost');
+    const btnProximo = document.getElementById('proximoPost');
+    const btnLikeModal = document.getElementById('btnLikeModal');
+    const btnFocarComentarioModal = document.getElementById('btnFocarComentarioModal');
+    const btnReportarModal = document.getElementById('btnReportarModal');
+    const formComentarioPostModal = document.getElementById('formComentarioPostModal');
+    const modalComentariosArea = document.getElementById('modalComentariosArea');
+    const modalReportar = document.getElementById('modalReportar');
+    const formReportar = document.getElementById('formReportar');
+    const fundoReportar = document.querySelector('.modal-reportar-fundo');
+    const cancelarReporte = document.querySelector('.cancelar-reporte');
+    const menuExcluirModal = document.getElementById('menuExcluirModal');
+    const formExcluirModal = document.getElementById('formExcluirModal');
+
+    let indexAtual = 0;
+    let postAtualId = null;
+
+    function criarComentarioElemento(comentario) {
+        const item = document.createElement('div');
+        item.className = 'comentario-item';
+        item.dataset.comentarioId = comentario.id;
+        item.dataset.username = comentario.username;
+        item.dataset.likeUrl = "{% url 'curtirComentario' 0 %}".replace('/0/', `/${comentario.id}/`);
+        item.dataset.deleteUrl = "{% url 'excluirComentario' 0 %}".replace('/0/', `/${comentario.id}/`);
+
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar comentario-avatar';
+
+        if (comentario.foto_url) {
+            const img = document.createElement('img');
+            img.src = comentario.foto_url;
+            img.alt = 'Foto';
+            avatar.appendChild(img);
+        } else {
+            avatar.textContent = comentario.inicial || '?';
+        }
+
+        const conteudo = document.createElement('div');
+        conteudo.className = 'comentario-conteudo';
+
+        const texto = document.createElement('p');
+        const usuario = document.createElement('strong');
+        usuario.textContent = `@${comentario.username}`;
+
+        texto.appendChild(usuario);
+        if (comentario.admin) {
+            const seloAdmin = document.createElement('span');
+            seloAdmin.className = 'selo-admin selo-admin-comentario';
+            seloAdmin.innerHTML = "<i class='bx bxs-badge-check'></i> admin";
+            texto.appendChild(seloAdmin);
+        } else if (comentario.verificado) {
+            const seloVerificado = document.createElement('span');
+            seloVerificado.className = 'selo-verificado selo-verificado-comentario';
+            seloVerificado.title = 'Colaborador verificado';
+            seloVerificado.innerHTML = "<i class='bx bxs-check-circle'></i>";
+            texto.appendChild(seloVerificado);
+        }
+        texto.append(` ${comentario.texto}`);
+
+        const data = document.createElement('span');
+        data.className = 'comentario-data';
+        data.textContent = comentario.data;
+
+        const acoes = document.createElement('div');
+        acoes.className = 'comentario-acoes';
+        acoes.innerHTML = `
+            <button type="button" class="btn-curtir-comentario">
+                <i class='bx bx-heart'></i>
+                <span>${comentario.likes || 0}</span>
+            </button>
+            ${comentario.resposta_de ? '' : '<button type="button" class="btn-responder-comentario">Responder</button>'}
+            ${comentario.pode_excluir ? '<button type="button" class="btn-excluir-comentario">Apagar</button>' : ''}
+        `;
+
+        conteudo.appendChild(texto);
+        conteudo.appendChild(data);
+        conteudo.appendChild(acoes);
+
+        if (!comentario.resposta_de) {
+            const respostas = document.createElement('div');
+            respostas.className = 'comentario-respostas';
+            conteudo.appendChild(respostas);
+        }
+
+        item.appendChild(avatar);
+        item.appendChild(conteudo);
+
+        return item;
+    }
+
+    function removerMensagemSemComentarios(container) {
+        const mensagem = container.querySelector('.sem-comentarios');
+
+        if (mensagem) {
+            mensagem.remove();
+        }
+    }
+
+    function atualizarIconeCurtida(botao, curtido) {
+        const icone = botao.querySelector('i');
+
+        if (!icone) {
+            return;
+        }
+
+        icone.classList.toggle('bx-heart', !curtido);
+        icone.classList.toggle('bxs-heart', curtido);
+    }
+
+    function atualizarOverlayCurtida(post, curtido, likes) {
+        const overlayLike = post.querySelector('.explorar-overlay span:first-child');
+
+        if (overlayLike) {
+            overlayLike.innerHTML = `<i class='bx ${curtido ? 'bxs-heart' : 'bx-heart'}'></i> ${likes}`;
+        }
+    }
+
+    function fecharPostModal() {
+        modal.classList.add('oculto');
+        document.body.classList.remove('modal-aberto');
+    }
+
+    function abrirModal(index) {
+        indexAtual = index;
+
+        const post = posts[index];
+        const img = post.querySelector('img');
+        const comentarios = document.getElementById(`comentarios-${post.dataset.id}`);
+
+        postAtualId = post.dataset.id;
+        modalImg.src = img.src;
+
+        document.getElementById('modalUsername').innerText = post.dataset.username;
+        document.getElementById('modalAdminSelo').classList.toggle('oculto', post.dataset.admin !== 'true');
+        document.getElementById('modalVerificadoSelo').classList.toggle('oculto', post.dataset.admin === 'true' || post.dataset.verificado !== 'true');
+        document.getElementById('modalNome').innerText = post.dataset.nome || post.dataset.username;
+        document.getElementById('modalEndereco').innerText = post.dataset.endereco;
+        document.getElementById('modalDescricao').innerText = post.dataset.descricao;
+        document.getElementById('modalTamanho').innerText = `Tamanho: ${post.dataset.tamanho}`;
+        const modalStatus = document.getElementById('modalStatus');
+        modalStatus.innerText = post.dataset.status;
+        modalStatus.className = `status-buraco status-${post.dataset.statusClasse}`;
+        const modalStatusForm = document.getElementById('modalStatusForm');
+        const modalStatusSelect = document.getElementById('modalStatusSelect');
+
+        if (modalStatusForm && modalStatusSelect) {
+            modalStatusForm.dataset.url = post.dataset.statusUrl;
+            modalStatusSelect.value = post.dataset.statusValor;
+        }
+        document.getElementById('modalLikes').innerText = post.dataset.likes;
+        document.getElementById('modalComentarios').innerText = post.dataset.comentarios;
+        modalComentariosArea.innerHTML = comentarios.innerHTML;
+        modalComentariosArea.scrollTop = 0;
+
+        formComentarioPostModal.action = post.dataset.comentarUrl;
+        formComentarioPostModal.reset();
+        formComentarioPostModal.querySelector('input[name="resposta_de"]').value = '';
+        formComentarioPostModal.querySelector('input[name="comentario"]').placeholder = 'Adicionar comentário...';
+        btnLikeModal.dataset.url = post.dataset.likeUrl;
+        btnReportarModal.dataset.url = post.dataset.reportarUrl;
+        btnReportarModal.classList.remove('reportado');
+        btnReportarModal.querySelector('span').innerText = 'Reportar';
+        formExcluirModal.action = post.dataset.excluirUrl;
+        formExcluirModal.classList.add('oculto');
+        menuExcluirModal.classList.toggle('oculto', post.dataset.podeExcluir !== 'true');
+
+        if (post.dataset.curtido === 'true') {
+            btnLikeModal.classList.add('curtido');
+        } else {
+            btnLikeModal.classList.remove('curtido');
+        }
+
+        atualizarIconeCurtida(btnLikeModal, post.dataset.curtido === 'true');
+
+        btnAnterior.style.display = indexAtual === 0 ? 'none' : 'flex';
+        btnProximo.style.display = indexAtual === posts.length - 1 ? 'none' : 'flex';
+
+        modal.classList.remove('oculto');
+        document.body.classList.add('modal-aberto');
+    }   
+
+    posts.forEach((post, index) => {
+        post.addEventListener('click', function(e) {
+            e.preventDefault();
+            abrirModal(index);
+        });
+    });
+
+    const modalStatusForm = document.getElementById('modalStatusForm');
+    const modalStatusSelect = document.getElementById('modalStatusSelect');
+
+    if (modalStatusForm && modalStatusSelect) {
+        modalStatusSelect.addEventListener('change', async () => {
+            const post = posts[indexAtual];
+            modalStatusSelect.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('status', modalStatusSelect.value);
+
+                const response = await fetch(modalStatusForm.dataset.url, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': modalStatusForm.querySelector('input[name="csrfmiddlewaretoken"]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    return;
+                }
+
+                const data = await response.json();
+                const modalStatus = document.getElementById('modalStatus');
+                modalStatus.innerText = data.status_nome;
+                modalStatus.className = `status-buraco status-${data.status_classe}`;
+                post.dataset.statusValor = data.status;
+                post.dataset.status = data.status_nome;
+                post.dataset.statusClasse = data.status_classe;
+            } finally {
+                modalStatusSelect.disabled = false;
+            }
+        });
+    }
+
+    fechar.addEventListener('click', fecharPostModal);
+    overlay.addEventListener('click', fecharPostModal);
+
+    btnProximo.addEventListener('click', () => {
+    if (indexAtual < posts.length - 1) {
+        abrirModal(indexAtual + 1);
+    }
+    });
+
+    btnAnterior.addEventListener('click', () => {
+        if (indexAtual > 0) {
+            abrirModal(indexAtual - 1);
+        }
+    });
+
+    btnLikeModal.addEventListener('click', async () => {
+        const response = await fetch(btnLikeModal.dataset.url, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        const data = await response.json();
+        const post = posts[indexAtual];
+
+        post.dataset.likes = data.likes;
+        post.dataset.curtido = data.curtido ? 'true' : 'false';
+        document.getElementById('modalLikes').innerText = data.likes;
+
+        if (data.curtido) {
+            btnLikeModal.classList.add('curtido');
+        } else {
+            btnLikeModal.classList.remove('curtido');
+        }
+
+        atualizarIconeCurtida(btnLikeModal, data.curtido);
+        atualizarOverlayCurtida(post, data.curtido, data.likes);
+    });
+
+    btnFocarComentarioModal.addEventListener('click', () => {
+        formComentarioPostModal.querySelector('input[name="comentario"]').focus();
+    });
+
+    function abrirModalReportar() {
+        formReportar.action = btnReportarModal.dataset.url;
+        formReportar.reset();
+        modalReportar.classList.remove('oculto');
+    }
+
+    function fecharModalReportar() {
+        modalReportar.classList.add('oculto');
+    }
+
+    btnReportarModal.addEventListener('click', abrirModalReportar);
+    fundoReportar.addEventListener('click', fecharModalReportar);
+    cancelarReporte.addEventListener('click', fecharModalReportar);
+
+    menuExcluirModal.querySelector('.btn-post-menu').addEventListener('click', (event) => {
+        event.stopPropagation();
+        formExcluirModal.classList.toggle('oculto');
+    });
+
+    formExcluirModal.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const response = await fetch(formExcluirModal.action, {
+            method: 'POST',
+            body: new FormData(formExcluirModal),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) {
+            return;
+        }
+
+        const post = posts[indexAtual];
+        const comentarios = document.getElementById(`comentarios-${postAtualId}`);
+
+        fecharPostModal();
+        post.remove();
+
+        if (comentarios) {
+            comentarios.remove();
+        }
+    });
+
+    formReportar.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const botaoEnviar = formReportar.querySelector('.confirmar-reporte');
+        botaoEnviar.disabled = true;
+
+        try {
+            const response = await fetch(formReportar.action, {
+            method: 'POST',
+            body: new FormData(formReportar),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+            btnReportarModal.classList.add('reportado');
+            btnReportarModal.querySelector('span').innerText = 'Reportado';
+
+            if (data.removido) {
+                const post = posts[indexAtual];
+                fecharPostModal();
+                post.remove();
+            }
+
+            fecharModalReportar();
+        } finally {
+            botaoEnviar.disabled = false;
+        }
+    });
+
+    formComentarioPostModal.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const input = formComentarioPostModal.querySelector('input[name="comentario"]');
+        const botaoEnviar = formComentarioPostModal.querySelector('button[type="submit"]');
+
+        if (!input.value.trim() || !postAtualId) {
+            return;
+        }
+
+        botaoEnviar.disabled = true;
+
+        try {
+            const response = await fetch(formComentarioPostModal.action, {
+                method: 'POST',
+                body: new FormData(formComentarioPostModal),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const comentario = await response.json();
+            const comentariosOriginais = document.getElementById(`comentarios-${postAtualId}`);
+            const post = posts[indexAtual];
+
+            removerMensagemSemComentarios(modalComentariosArea);
+            removerMensagemSemComentarios(comentariosOriginais);
+
+            if (comentario.resposta_de) {
+                const paiModal = modalComentariosArea.querySelector(`[data-comentario-id="${comentario.resposta_de}"]`);
+                const paiOriginal = comentariosOriginais.querySelector(`[data-comentario-id="${comentario.resposta_de}"]`);
+                const respostasModal = paiModal ? paiModal.querySelector('.comentario-respostas') : null;
+                const respostasOriginal = paiOriginal ? paiOriginal.querySelector('.comentario-respostas') : null;
+
+                if (respostasModal) {
+                    const respostaModal = criarComentarioElemento(comentario);
+                    respostaModal.classList.add('comentario-resposta');
+                    respostasModal.appendChild(respostaModal);
+                }
+
+                if (respostasOriginal) {
+                    const respostaOriginal = criarComentarioElemento(comentario);
+                    respostaOriginal.classList.add('comentario-resposta');
+                    respostasOriginal.appendChild(respostaOriginal);
+                }
+            } else {
+                modalComentariosArea.appendChild(criarComentarioElemento(comentario));
+                comentariosOriginais.appendChild(criarComentarioElemento(comentario));
+            }
+
+            post.dataset.comentarios = comentario.total_comentarios;
+            document.getElementById('modalComentarios').innerText = comentario.total_comentarios;
+
+            const overlayComentarios = post.querySelector('.explorar-overlay span:last-child');
+            if (overlayComentarios) {
+                overlayComentarios.innerHTML = `<i class='bx bx-message-dots'></i> ${comentario.total_comentarios}`;
+            }
+
+            input.value = '';
+            formComentarioPostModal.querySelector('input[name="resposta_de"]').value = '';
+            input.placeholder = 'Adicionar comentário...';
+            modalComentariosArea.scrollTop = modalComentariosArea.scrollHeight;
+        } finally {
+            botaoEnviar.disabled = false;
+            input.focus();
+        }
+    });
+
+    modalComentariosArea.addEventListener('click', async (event) => {
+        const btnCurtir = event.target.closest('.btn-curtir-comentario');
+        const btnResponder = event.target.closest('.btn-responder-comentario');
+        const btnExcluir = event.target.closest('.btn-excluir-comentario');
+        const comentarioItem = event.target.closest('.comentario-item');
+
+        if (!comentarioItem) {
+            return;
+        }
+
+        if (btnCurtir) {
+            const response = await fetch(comentarioItem.dataset.likeUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+            btnCurtir.classList.toggle('curtido', data.curtido);
+            btnCurtir.querySelector('i').classList.toggle('bxs-heart', data.curtido);
+            btnCurtir.querySelector('i').classList.toggle('bx-heart', !data.curtido);
+            btnCurtir.querySelector('span').innerText = data.likes;
+        }
+
+        if (btnResponder) {
+            formComentarioPostModal.querySelector('input[name="resposta_de"]').value = comentarioItem.dataset.comentarioId;
+            const input = formComentarioPostModal.querySelector('input[name="comentario"]');
+            input.placeholder = `Responder @${comentarioItem.dataset.username}...`;
+            input.focus();
+        }
+
+        if (btnExcluir) {
+            const response = await fetch(comentarioItem.dataset.deleteUrl, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+
+            if (!response.ok) {
+                return;
+            }
+
+            const data = await response.json();
+            const original = document.querySelector(`#comentarios-${postAtualId} [data-comentario-id="${comentarioItem.dataset.comentarioId}"]`);
+            const post = posts[indexAtual];
+
+            comentarioItem.remove();
+
+            if (original) {
+                original.remove();
+            }
+
+            post.dataset.comentarios = data.total_comentarios;
+            document.getElementById('modalComentarios').innerText = data.total_comentarios;
+
+            const overlayComentarios = post.querySelector('.explorar-overlay span:last-child');
+            if (overlayComentarios) {
+                overlayComentarios.innerHTML = `<i class='bx bx-message-dots'></i> ${data.total_comentarios}`;
+            }
+        }
+    });
+}
+</script>
+
+{% endblock %}
