@@ -19,10 +19,10 @@ Ver no mapa
         position: relative;
         min-height: calc(100vh - 190px);
         overflow: hidden;
-        border: 1px solid #eee;
+        border: 1px solid var(--border-color);
         border-radius: 8px;
-        background: white;
-        box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+        background: var(--card-color);
+        box-shadow: 0 8px 22px var(--shadow-color);
     }
 
     #mapaBuracos {
@@ -45,12 +45,17 @@ Ver no mapa
     .busca-mapa input {
         flex: 1;
         min-width: 0;
-        border: 1px solid #ddd;
+        border: 1px solid var(--border-color);
         border-radius: 999px;
-        background: white;
+        background: var(--input-color);
+        color: var(--text-color);
         padding: 12px 16px;
         outline: none;
         box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+    }
+
+    .busca-mapa input::placeholder {
+        color: var(--muted-text-color);
     }
 
     .busca-mapa button {
@@ -58,7 +63,7 @@ Ver no mapa
         height: 46px;
         border: none;
         border-radius: 50%;
-        background: #8f0b13;
+        background: #d8bc1fdc;
         color: white;
         font-size: 20px;
         cursor: pointer;
@@ -73,22 +78,26 @@ Ver no mapa
 
     .mapa-resumo,
     .zonas-card {
-        border: 1px solid #eee;
+        border: 1px solid var(--border-color);
         border-radius: 8px;
-        background: white;
+        background: var(--card-color);
         padding: 16px;
-        box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+        box-shadow: 0 8px 22px var(--shadow-color);
+    }
+
+    .mapa-filtro-status {
+        margin-bottom: 0;
     }
 
     .mapa-resumo h1 {
         margin: 0 0 8px;
-        color: #111;
+        color: var(--heading-color);
         font-size: 22px;
     }
 
     .mapa-resumo p {
         margin: 0;
-        color: #666;
+        color: var(--muted-text-color);
         font-size: 14px;
         line-height: 1.45;
     }
@@ -102,25 +111,25 @@ Ver no mapa
 
     .mapa-contador {
         border-radius: 8px;
-        background: #f6f6f6;
+        background: var(--surface-color);
         padding: 12px;
     }
 
     .mapa-contador strong {
         display: block;
-        color: #111;
+        color: var(--heading-color);
         font-size: 24px;
         line-height: 1;
     }
 
     .mapa-contador span {
-        color: #777;
+        color: var(--muted-text-color);
         font-size: 12px;
     }
 
     .zonas-card h2 {
         margin: 0 0 12px;
-        color: #111;
+        color: var(--heading-color);
         font-size: 17px;
     }
 
@@ -133,31 +142,32 @@ Ver no mapa
     }
 
     .zona-item {
-        border: 1px solid #f0f0f0;
+        border: 1px solid var(--border-color);
         border-radius: 8px;
+        background: var(--surface-color);
         padding: 10px;
         cursor: pointer;
         transition: 0.2s;
     }
 
     .zona-item:hover {
-        border-color: #8f0b13;
-        background: #fff8ed;
+        border-color: #d8bc1fdc;
+        background: var(--primary-color-light);
     }
 
     .zona-item.ativa {
-        border-color: #850b13b4;
-        background: #fff3df;
+        border-color: #bba216dc;
+        background: var(--primary-color-light);
     }
 
     .zona-item strong {
         display: block;
-        color: #222;
+        color: var(--heading-color);
         font-size: 14px;
     }
 
     .zona-item span {
-        color: #777;
+        color: var(--muted-text-color);
         font-size: 12px;
     }
 
@@ -169,7 +179,7 @@ Ver no mapa
         height: 34px;
         border: 3px solid white;
         border-radius: 50%;
-        background: #8f0b13;
+        background: #d8bc1fdc;
         color: white;
         box-shadow: 0 6px 14px rgba(0,0,0,0.28);
     }
@@ -201,9 +211,41 @@ Ver no mapa
     }
 
     .popup-buraco a {
-        color: #8f0b13;
+        color: #d8bc1fdc;
         font-weight: 700;
         text-decoration: none;
+    }
+
+    html[data-theme="dark"] .mapa-resumo,
+    html[data-theme="dark"] .zonas-card,
+    html[data-theme="dark"] .mapa-card {
+        background: var(--card-color);
+        border-color: var(--border-color);
+    }
+
+    html[data-theme="dark"] .mapa-resumo h1,
+    html[data-theme="dark"] .zonas-card h2,
+    html[data-theme="dark"] .mapa-contador strong,
+    html[data-theme="dark"] .zona-item strong {
+        color: var(--heading-color);
+    }
+
+    html[data-theme="dark"] .mapa-resumo p,
+    html[data-theme="dark"] .mapa-contador span,
+    html[data-theme="dark"] .zona-item span {
+        color: var(--muted-text-color);
+    }
+
+    html[data-theme="dark"] .mapa-contador,
+    html[data-theme="dark"] .zona-item {
+        background: var(--surface-color);
+        border-color: var(--border-color);
+    }
+
+    html[data-theme="dark"] .zona-item:hover,
+    html[data-theme="dark"] .zona-item.ativa {
+        background: #33151a;
+        border-color: #a50914;
     }
 
     @media (max-width: 980px) {
@@ -301,6 +343,18 @@ Ver no mapa
     </div>
 
     <aside class="mapa-lateral">
+        <form class="filtro-status mapa-filtro-status" method="get" aria-label="Filtrar por status">
+            {% for valor, label in status_filtros %}
+                <button
+                    type="submit"
+                    name="status"
+                    value="{{ valor }}"
+                    class="{% if status_atual == valor %}ativo{% endif %}">
+                    {{ label }}
+                </button>
+            {% endfor %}
+        </form>
+
         <section class="mapa-resumo">
             <h1>Mapa de buracos</h1>
             <p>As áreas maiores indicam zonas com mais registros. Os pins mostram os buracos cadastrados individualmente.</p>
@@ -380,9 +434,9 @@ zonasMapa.forEach(zona => {
 
     const circulo = L.circle([zona.latitude, zona.longitude], {
         radius: raio,
-        color: '#8f0b13',
+        color: '#d8bc1fdc',
         weight: 2,
-        fillColor: '#8f0b13',
+        fillColor: '#d8bc1fdc',
         fillOpacity: 0.16 + (intensidade * 0.22)
     }).addTo(mapa).bindPopup(`
         <strong>${zona.nome}</strong><br>

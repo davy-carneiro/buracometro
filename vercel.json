@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "python buracometro/manage.py collectstatic --noinput",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.py"
+    }
+  ],
+  "functions": {
+    "api/index.py": {
+      "excludeFiles": "{venv/**,.venv/**,**/__pycache__/**,**/*.pyc,buracometro/db.sqlite3,buracometro/media/**}"
+    }
+  }
+}

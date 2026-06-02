@@ -15,6 +15,7 @@ db - Copia.sqlite3
 
 # User-uploaded files
 media/
+staticfiles/
 
 # Local settings and secrets
 .env
